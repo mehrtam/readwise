@@ -1,0 +1,2156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Readwise</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F5F2ED;--ink:#1A1A1A;--muted:#8A8480;--accent:#D4622A;--accent2:#3B5BDB;--success:#2D6A4F;--border:#E8E3DC;--claude:#D97757;--card:#fff}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+button{font-family:'DM Sans',sans-serif}
+
+/* ══ ONBOARDING SCREEN ══ */
+#onboarding{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+.ob-card{background:white;border-radius:28px;padding:48px 44px;width:520px;max-width:100%;box-shadow:0 20px 60px rgba(0,0,0,.1)}
+.ob-step{display:none}.ob-step.active{display:block}
+.ob-mascot{width:64px;height:68px;margin:0 auto 20px;display:block}
+.ob-mascot svg{width:100%;height:100%;overflow:visible}
+@keyframes obBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.ob-mascot svg{animation:obBounce 2s ease-in-out infinite}
+.ob-title{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;text-align:center;margin-bottom:6px}
+.ob-sub{color:var(--muted);font-size:.9rem;text-align:center;margin-bottom:28px;line-height:1.6}
+.ob-field{margin-bottom:16px}
+.ob-field label{display:block;font-size:.82rem;font-weight:500;margin-bottom:6px;color:var(--ink)}
+.ob-field input{width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:12px;font-size:.95rem;background:var(--bg);color:var(--ink);outline:none;transition:border-color .2s}
+.ob-field input:focus{border-color:var(--accent)}
+.days-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:8px}
+.day-btn{padding:8px 2px;border:1.5px solid var(--border);border-radius:10px;background:none;cursor:pointer;font-size:.75rem;font-weight:500;color:var(--muted);transition:all .15s;text-align:center}
+.day-btn.sel{background:var(--accent);border-color:var(--accent);color:white}
+.modules-per-day{display:flex;gap:8px;flex-wrap:wrap}
+.mpd-btn{padding:8px 14px;border:1.5px solid var(--border);border-radius:50px;background:none;cursor:pointer;font-size:.85rem;color:var(--muted);transition:all .15s}
+.mpd-btn.sel{background:var(--ink);border-color:var(--ink);color:white}
+.ob-btn{width:100%;padding:14px;border-radius:50px;border:none;font-size:.95rem;font-weight:600;cursor:pointer;margin-top:8px;transition:opacity .2s}
+.ob-btn.primary{background:var(--ink);color:white}.ob-btn.primary:hover{opacity:.85}
+.ob-btn.secondary{background:none;border:1.5px solid var(--border);color:var(--muted);margin-top:6px}.ob-btn.secondary:hover{border-color:var(--ink);color:var(--ink)}
+.ob-dots{display:flex;justify-content:center;gap:6px;margin-bottom:24px}
+.ob-dot{width:7px;height:7px;border-radius:50%;background:var(--border)}.ob-dot.active{background:var(--accent)}
+.plan-goal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.plan-goal-btn{padding:14px;border:1.5px solid var(--border);border-radius:14px;background:none;cursor:pointer;text-align:left;transition:all .15s}
+.plan-goal-btn.sel{border-color:var(--accent);background:#FFF8F5}
+.plan-goal-btn .pg-icon{font-size:1.4rem;margin-bottom:6px;display:block}
+.plan-goal-btn .pg-label{font-size:.85rem;font-weight:600;color:var(--ink);display:block}
+.plan-goal-btn .pg-sub{font-size:.74rem;color:var(--muted);display:block;margin-top:2px}
+
+/* ══ NAV ══ */
+nav{display:flex;align-items:center;justify-content:space-between;padding:12px 40px;background:var(--bg);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-brand{display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none;position:relative}
+.mascot-wrap{width:44px;height:48px;flex-shrink:0}
+.mascot-wrap svg{width:100%;height:100%;overflow:visible}
+@keyframes headTurn{0%,38%,100%{transform:rotate(0)}42%{transform:rotate(-18deg)}50%{transform:rotate(16deg)}58%{transform:rotate(-10deg)}64%{transform:rotate(0)}}
+.mascot-head{transform-origin:24px 20px;animation:headTurn 4s ease-in-out infinite}
+@keyframes blink{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(0.05)}}
+.mascot-eyes{animation:blink 3.5s ease-in-out infinite;transform-origin:24px 22px}
+.mascot-wrap:hover .mascot-ear-l{animation:earL .4s ease}
+.mascot-wrap:hover .mascot-ear-r{animation:earR .4s ease}
+@keyframes earL{0%,100%{transform:rotate(0)}40%{transform:rotate(-15deg)}70%{transform:rotate(8deg)}}
+@keyframes earR{0%,100%{transform:rotate(0)}40%{transform:rotate(15deg)}70%{transform:rotate(-8deg)}}
+.mascot-ear-l{transform-origin:8px 14px}.mascot-ear-r{transform-origin:40px 14px}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;letter-spacing:-.5px;line-height:1}
+.nav-logo span{color:var(--accent);font-style:italic}
+.nav-logo small{display:block;font-family:'DM Sans',sans-serif;font-size:.58rem;font-weight:400;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-top:1px}
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-user{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--muted)}
+.nav-avatar{width:30px;height:30px;border-radius:50%;background:var(--accent);color:white;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:600}
+.nav-btn{background:var(--ink);color:white;border:none;padding:9px 20px;border-radius:50px;font-size:.82rem;font-weight:500;cursor:pointer;transition:opacity .2s}
+.nav-btn:hover{opacity:.75}
+
+/* progress popup */
+.progress-popup{position:absolute;top:calc(100% + 10px);left:0;background:white;border:1px solid var(--border);border-radius:18px;padding:20px;width:280px;box-shadow:0 8px 32px rgba(0,0,0,.12);z-index:300;display:none;animation:popIn .2s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{transform:translateY(-8px) scale(.95);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+.progress-popup.open{display:block}
+.progress-popup h4{font-family:'Playfair Display',serif;font-size:1rem;margin-bottom:14px;font-weight:700}
+.pop-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.pop-name{font-size:.82rem;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pop-bar{width:80px;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.pop-bar-fill{height:100%;border-radius:3px;background:var(--accent);transition:width .5s}
+.pop-pct{font-size:.75rem;color:var(--muted);width:30px;text-align:right}
+.pop-overall{margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:.82rem;color:var(--muted);display:flex;align-items:center;justify-content:space-between}
+.pop-overall strong{color:var(--ink);font-size:1rem}
+
+/* ══ LAYOUT ══ */
+.app-layout{display:flex;height:calc(100vh - 61px);overflow:hidden}
+.sidebar{flex-shrink:0;width:256px;border-right:1px solid var(--border);padding:24px 16px;background:var(--bg);overflow-y:auto;height:100%}
+.sb-title{font-size:.68rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-left:4px}
+.sb-plan-badge{background:white;border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:16px;font-size:.8rem;color:var(--muted);line-height:1.5}
+.sb-plan-badge strong{color:var(--ink);display:block;font-size:.82rem}
+.mod-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;cursor:pointer;transition:background .15s;margin-bottom:3px;border:1.5px solid transparent}
+.mod-item:hover{background:var(--border)}
+.mod-item.active{background:white;border-color:var(--border);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.mod-dot{width:9px;height:9px;border-radius:50%;background:var(--border);flex-shrink:0}
+.mod-dot.done{background:var(--success)}.mod-dot.active{background:var(--accent)}
+.mod-info{flex:1;min-width:0}
+.mod-name{font-size:.85rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mod-meta{font-size:.72rem;color:var(--muted);margin-top:2px}
+.mod-plan-chip{font-size:.65rem;background:#EEF2FF;color:var(--accent2);padding:2px 7px;border-radius:4px;white-space:nowrap;margin-top:3px;display:inline-block}
+.mod-plan-chip.today{background:#FFF3EC;color:var(--accent)}
+.mod-delete-btn{opacity:0;width:22px;height:22px;border-radius:50%;border:none;background:none;color:var(--muted);cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;margin-left:4px}
+.mod-item:hover .mod-delete-btn{opacity:1}
+.mod-delete-btn:hover{background:#FDECEA;color:#C0392B}
+.add-mod-btn{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px dashed var(--border);border-radius:12px;cursor:pointer;color:var(--muted);font-size:.83rem;background:none;width:100%;margin-top:8px;transition:border-color .2s,color .2s}
+.add-mod-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ══ CENTER ══ */
+.center{flex:1;min-width:0;padding:36px 40px;overflow-y:auto;overflow-x:hidden;height:100%}
+
+/* ── MODULE PREVIEW (before reading) ── */
+#previewView{max-width:720px}
+.preview-header{margin-bottom:24px}
+.preview-tag{font-size:.68rem;letter-spacing:1px;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:6px}
+.preview-title{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;line-height:1.2;margin-bottom:10px}
+.preview-meta{font-size:.85rem;color:var(--muted);display:flex;gap:16px}
+.preview-card{background:white;border-radius:20px;padding:32px;border:1px solid var(--border);margin-bottom:16px}
+.preview-card h3{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.learn-cards-header{font-size:.68rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.learn-cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:12px;margin-bottom:4px}
+.learn-card{background:white;border:1px solid var(--border);border-radius:16px;padding:18px 18px 16px;transition:transform .15s,box-shadow .15s}
+.learn-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08)}
+.learn-card-num{font-size:.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.learn-card-icon{font-size:1.5rem;margin-bottom:8px;display:block}
+.learn-card-title{font-weight:600;font-size:.9rem;color:var(--ink);margin-bottom:5px}
+.learn-card-desc{font-size:.79rem;color:var(--muted);line-height:1.55}
+.preview-diagram svg{width:100%;height:auto}
+.concepts-list{display:flex;flex-wrap:wrap;gap:10px}
+/* concept chip — clickable, expands to show definition */
+.concept-chip{
+  background:var(--bg); border:1.5px solid var(--border);
+  border-radius:50px; padding:7px 14px;
+  font-size:.83rem; font-weight:500;
+  display:inline-flex; align-items:center; gap:7px;
+  cursor:pointer; transition:all .2s; position:relative;
+  user-select:none;
+}
+.concept-chip::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.concept-chip:hover{background:white;border-color:var(--accent);box-shadow:0 3px 12px rgba(212,98,42,.15);transform:translateY(-1px)}
+.concept-chip.open{
+  border-radius:16px; background:white;
+  border-color:var(--accent); padding:12px 16px;
+  flex-direction:column; align-items:flex-start; gap:6px;
+  box-shadow:0 4px 16px rgba(212,98,42,.12);
+  animation:chipExpand .25s cubic-bezier(.34,1.56,.64,1);
+}
+.concept-chip.open::before{display:none}
+@keyframes chipIn{from{opacity:0;transform:translateY(8px) scale(.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+.concept-chip{animation:chipIn .3s cubic-bezier(.34,1.56,.64,1) both}
+.chip-label{display:flex;align-items:center;gap:7px;font-weight:600;font-size:.83rem;color:var(--ink)}
+.chip-label::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.chip-def{font-size:.78rem;color:var(--muted);line-height:1.55;padding-left:14px;max-width:280px}
+.chip-close{margin-left:auto;font-size:.75rem;color:var(--muted);background:none;border:none;cursor:pointer;padding:0;line-height:1;align-self:flex-start}
+.start-reading-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--ink);color:white;border:none;padding:16px 36px;border-radius:50px;font-size:.95rem;font-weight:600;cursor:pointer;transition:transform .2s,box-shadow .2s;margin-top:8px}
+.start-reading-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.15)}
+
+/* ── READING ── */
+#readingView{max-width:720px;display:none}
+.reading-header{margin-bottom:24px;display:flex;align-items:flex-start;justify-content:space-between}
+.reading-tag{font-size:.68rem;letter-spacing:1px;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:6px}
+.reading-title{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;line-height:1.2}
+.reading-card{background:white;border-radius:20px;padding:40px 48px;border:1px solid var(--border);box-shadow:0 2px 16px rgba(0,0,0,.05);line-height:1.85;font-size:.97rem;color:#2d2d2d;width:100%;word-wrap:break-word}
+.rc-label{display:inline-flex;align-items:center;gap:6px;font-size:.66rem;letter-spacing:1.4px;text-transform:uppercase;font-weight:600;color:var(--accent);margin:18px 0 8px}
+.rc-label::before{content:'';display:inline-block;width:14px;height:2px;background:var(--accent);border-radius:1px}
+.rc-formula{background:#F8F9FF;border:1px solid #DDE3FF;border-radius:8px;padding:12px 16px;font-family:'Courier New',monospace;font-size:.85rem;color:var(--accent2);margin:12px 0}
+.rc-h1{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;margin:20px 0 10px;color:var(--ink)}
+.rc-h2{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;margin:18px 0 8px;color:var(--ink);padding-bottom:6px;border-bottom:1px solid var(--border)}
+.rc-h3{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;margin:14px 0 6px;color:var(--ink)}
+.rc-blockquote{border-left:3px solid var(--accent);padding:10px 16px;margin:14px 0;color:#666;font-style:italic;background:#FAFAFA;border-radius:0 8px 8px 0}
+.rc-list{padding-left:22px;margin:10px 0}
+.rc-list li{margin-bottom:6px;color:#383838;line-height:1.7}
+.rc-ol{list-style:decimal}
+.rc-divider-md{border:none;border-top:1px solid var(--border);margin:20px 0}
+.rc-code-block{background:#1e1e2e;border-radius:10px;margin:16px 0;overflow:hidden}
+.rc-code-lang{background:#2a2a3e;color:#7c7caa;font-size:.72rem;padding:6px 14px;letter-spacing:.5px;font-family:'DM Sans',sans-serif}
+.rc-code-block pre{margin:0;padding:16px 18px;overflow-x:auto}
+.rc-code-block code{font-family:'Courier New',monospace;font-size:.84rem;color:#cdd6f4;line-height:1.65}
+.inline-code{background:#F0F0F5;color:var(--accent2);font-family:'Courier New',monospace;font-size:.85em;padding:1px 6px;border-radius:4px}
+.editor-toolbar{display:flex;gap:4px;padding:8px 10px;background:var(--bg);border:1.5px solid var(--border);border-bottom:none;border-radius:10px 10px 0 0;flex-wrap:wrap;align-items:center}
+.ed-btn{padding:5px 9px;border:1px solid var(--border);background:white;border-radius:6px;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--ink);transition:all .15s;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.ed-btn:hover{background:var(--accent);color:white;border-color:var(--accent)}
+.ed-sep{width:1px;height:20px;background:var(--border);margin:0 3px}
+#newContent{border-radius:0 0 10px 10px !important;font-family:'Courier New',monospace !important;font-size:.84rem !important;min-height:200px;line-height:1.65;border-top:none !important}
+.reading-card p{margin-bottom:14px;color:#383838}
+.reading-card .highlight{background:linear-gradient(135deg,#FFF8F5,#FFF3EC);border-left:3px solid var(--accent);padding:12px 18px;border-radius:0 10px 10px 0;margin:16px 0;font-style:italic;color:#b84d1a;font-size:.94rem}
+.rc-divider{border:none;border-top:1px solid var(--border);margin:28px 0}
+.quiz-invite{display:flex;flex-direction:column;align-items:center;text-align:center;padding:16px 0 4px;gap:12px}
+.qi-icon{font-size:2rem}
+.quiz-invite h3{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700}
+.quiz-invite p{color:var(--muted);font-size:.88rem;max-width:320px}
+.quiz-invite-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.start-quiz-btn{display:flex;align-items:center;gap:8px;background:var(--ink);color:white;border:none;padding:13px 26px;border-radius:50px;font-size:.9rem;font-weight:500;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.start-quiz-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.15)}
+.summary-btn{display:flex;align-items:center;gap:8px;background:white;color:var(--ink);border:1.5px solid var(--border);padding:13px 26px;border-radius:50px;font-size:.9rem;font-weight:500;cursor:pointer;transition:border-color .15s}
+.summary-btn:hover{border-color:var(--accent);color:var(--accent)}
+.claude-logo{width:22px;height:22px;background:var(--claude);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:.62rem;font-weight:700}
+
+/* ── QUIZ ── */
+#quizView{display:none;max-width:720px}
+.quiz-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.claude-badge{display:flex;align-items:center;gap:8px;background:white;border:1px solid var(--border);border-radius:50px;padding:8px 16px;font-size:.82rem;font-weight:500;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.qprog{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.qprog-bar{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.qprog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s;width:0%}
+.qprog-txt{font-size:.8rem;color:var(--muted);white-space:nowrap}
+.loading-quiz{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:260px;gap:18px}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--claude);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-quiz p{color:var(--muted);font-size:.9rem}
+.q-card{background:white;border-radius:20px;padding:28px 32px;border:1px solid var(--border);margin-bottom:16px}
+.q-num{font-size:.73rem;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px}
+.q-text{font-family:'Playfair Display',serif;font-size:1.15rem;line-height:1.5;margin-bottom:20px;font-weight:500}
+.options{display:flex;flex-direction:column;gap:9px}
+.opt-btn{display:flex;align-items:center;gap:12px;padding:13px 16px;border:1.5px solid var(--border);border-radius:12px;background:none;cursor:pointer;text-align:left;font-size:.9rem;transition:all .15s;width:100%}
+.opt-btn:hover{border-color:var(--accent2);background:#f0f3ff}
+.opt-btn.selected{border-color:var(--accent2);background:#EEF2FF}
+.opt-letter{width:26px;height:26px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:600;flex-shrink:0;border:1.5px solid var(--border)}
+.quiz-nav{display:flex;gap:10px;margin-top:8px}
+.qbtn{padding:11px 22px;border-radius:50px;border:none;font-size:.88rem;font-weight:500;cursor:pointer;transition:opacity .2s,transform .15s}
+.qbtn:hover{opacity:.85;transform:translateY(-1px)}
+.qbtn.primary{background:var(--ink);color:white}
+.qbtn.secondary{background:white;color:var(--ink);border:1.5px solid var(--border)}
+
+/* ── RESULTS ── */
+#resultsView{display:none;max-width:720px}
+.score-circle{width:96px;height:96px;border-radius:50%;background:white;border:3px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.score-num{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;line-height:1}
+.score-lbl{font-size:.68rem;color:var(--muted)}
+.res-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;margin-bottom:8px}
+.res-sub{color:var(--muted);font-size:.88rem;margin-bottom:24px}
+.gap-card{background:white;border-radius:14px;padding:18px 22px;border:1px solid var(--border);margin-bottom:10px}
+.gap-topic{font-weight:500;margin-bottom:5px;display:flex;align-items:center;gap:8px;font-size:.9rem}
+.gap-tag{font-size:.68rem;background:#FFF3EC;color:var(--accent);padding:2px 8px;border-radius:4px}
+.gap-desc{font-size:.83rem;color:var(--muted);line-height:1.6}
+.res-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.res-btn{display:flex;align-items:center;gap:8px;padding:13px 22px;border-radius:50px;border:none;font-size:.88rem;font-weight:500;cursor:pointer;transition:opacity .2s}
+.res-btn.primary{background:var(--accent);color:white}
+.res-btn.secondary{background:white;color:var(--ink);border:1.5px solid var(--border)}
+.res-btn:hover{opacity:.85}
+
+/* ── SUMMARY VIEW ── */
+#summaryView{display:none;max-width:720px}
+.summary-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.summary-tabs{display:flex;gap:6px;background:white;border:1px solid var(--border);border-radius:50px;padding:4px}
+.s-tab{padding:7px 18px;border-radius:50px;border:none;background:none;font-size:.83rem;font-weight:500;cursor:pointer;color:var(--muted);transition:all .15s}
+.s-tab.active{background:var(--ink);color:white}
+.s-panel{display:none}.s-panel.active{display:block}
+
+/* flashcards */
+.fc-wrapper{perspective:1000px;margin-bottom:16px}
+.fc{width:100%;min-height:200px;position:relative;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.4,0,.2,1);cursor:pointer}
+.fc.flipped{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:white;border-radius:20px;border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 32px;text-align:center;min-height:200px;overflow:hidden}
+.fc-face.back{transform:rotateY(180deg);background:linear-gradient(135deg,#FFF8F5,#FFF3EC)}
+.fc-face .fc-label{font-size:.68rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;flex-shrink:0}
+.fc-face .fc-text{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:500;line-height:1.4;overflow-y:auto;max-height:160px;scrollbar-width:thin;word-break:break-word}
+.fc-face.back .fc-text{font-family:'DM Sans',sans-serif;font-size:.88rem;line-height:1.7;color:#383838;font-weight:400;font-style:normal}
+.fc-hint{text-align:center;font-size:.78rem;color:var(--muted);margin-bottom:12px}
+.fc-nav{display:flex;align-items:center;justify-content:center;gap:16px}
+.fc-nav-btn{padding:9px 20px;border:1.5px solid var(--border);border-radius:50px;background:white;font-size:.83rem;font-weight:500;cursor:pointer;transition:all .15s;color:var(--ink)}
+.fc-nav-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.fc-nav-btn:disabled{opacity:.35;cursor:default}
+.fc-counter{font-size:.8rem;color:var(--muted)}
+
+/* mind map */
+.mindmap-container{background:white;border-radius:20px;border:1px solid var(--border);padding:0;overflow:auto}
+.mm-wrap{
+  position:relative;width:1000px;height:680px;
+  background-color:#f7f6f2;
+  background-image:linear-gradient(#e0e0e0 1px,transparent 1px),linear-gradient(90deg,#e0e0e0 1px,transparent 1px);
+  background-size:40px 40px;
+  margin:0 auto;
+}
+.mm-center{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:38px;font-weight:900;color:#ff7a32;text-transform:uppercase;
+  text-align:center;line-height:0.95;
+  -webkit-text-stroke:2px black;
+  filter:drop-shadow(4px 4px 0px black);
+  z-index:10;user-select:none;pointer-events:none;
+  max-width:160px;word-break:break-word;
+}
+.mm-arrows{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.mm-arrows line,.mm-arrows polyline{fill:none;stroke:black;stroke-width:2}
+.mm-node{
+  position:absolute;background:#ece3d4;
+  border:2px solid black;width:195px;padding:12px 14px;
+  box-shadow:4px 4px 0 black;z-index:5;
+  word-wrap:break-word;overflow-wrap:break-word;
+}
+.mm-node h3{margin:0 0 6px;text-transform:uppercase;font-size:11.5px;text-align:center;border-bottom:2px solid black;padding-bottom:4px;letter-spacing:.8px;font-family:'DM Sans',sans-serif;word-break:break-word}
+.mm-node p{margin:0;font-size:10.5px;line-height:1.45;text-align:center;color:#333;font-family:'DM Sans',sans-serif;word-break:break-word;max-height:90px;overflow:hidden}
+/* positions — more spread out to avoid overlap */
+.n-top{top:12px;left:50%;transform:translateX(-50%)}
+.n-top-right{top:30px;right:20px}
+.n-right{top:50%;right:12px;transform:translateY(-50%)}
+.n-bottom-right{bottom:30px;right:20px}
+.n-bottom{bottom:12px;left:50%;transform:translateX(-50%)}
+.n-bottom-left{bottom:30px;left:20px}
+.n-left{top:50%;left:12px;transform:translateY(-50%)}
+.n-top-left{top:30px;left:20px}
+.mindmap-container svg{display:block;margin:0 auto}
+
+/* text summary */
+.text-summary{background:white;border-radius:20px;padding:32px 36px;border:1px solid var(--border);line-height:1.85}
+.text-summary h3{font-family:'Playfair Display',serif;font-size:1.05rem;margin-bottom:10px;margin-top:20px;font-weight:700}
+.text-summary h3:first-child{margin-top:0}
+.text-summary ul{padding-left:20px}
+.text-summary li{margin-bottom:8px;font-size:.93rem;color:#383838}
+.summary-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:16px}
+.gen-progress{display:flex;flex-direction:column;align-items:center;gap:10px;width:220px}
+.gen-pct{font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:700;color:var(--accent);line-height:1;transition:color .3s}
+.gen-bar-wrap{width:100%;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.gen-bar{height:100%;width:0%;background:var(--accent);border-radius:3px;transition:width .4s ease,background .3s}
+.gen-label{font-size:.8rem;color:var(--muted);letter-spacing:.3px}
+
+/* ══ NOTES FAB + DRAWER ══ */
+.notes-fab{position:fixed;bottom:28px;right:28px;display:flex;align-items:center;gap:8px;background:var(--ink);color:white;border:none;padding:12px 20px;border-radius:50px;font-size:.85rem;font-weight:500;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.2);z-index:150;transition:transform .2s,box-shadow .2s}
+.notes-fab:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.badge{background:var(--accent);color:white;font-size:.68rem;font-weight:700;min-width:17px;height:17px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;padding:0 4px}
+.badge.hidden{display:none}
+.notes-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:200;display:none;backdrop-filter:blur(2px)}
+.notes-overlay.open{display:block}
+.notes-panel{position:fixed;top:0;right:0;bottom:0;width:310px;background:white;border-left:1px solid var(--border);padding:26px 22px;overflow-y:auto;z-index:201;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+.notes-panel.open{transform:translateX(0)}
+.notes-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.notes-hdr-title{font-size:.68rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+.notes-close{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.notes-close:hover{background:var(--bg)}
+.note-item{border-radius:12px;padding:14px;background:var(--bg);margin-bottom:10px;border:1px solid var(--border);position:relative;overflow:hidden}
+.note-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent2);border-radius:2px 0 0 2px}
+.note-mod{font-size:.7rem;color:var(--muted);margin-bottom:5px}
+.note-txt{font-size:.83rem;line-height:1.6}
+.empty-notes{text-align:center;padding:40px 16px;color:var(--muted);flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.empty-notes .ei{font-size:2.2rem;margin-bottom:10px;opacity:.35}
+.empty-notes p{font-size:.83rem;line-height:1.6}
+
+/* ══ BREAK POPUP ══ */
+.break-overlay{position:fixed;inset:0;background:rgba(26,26,26,.5);backdrop-filter:blur(8px);z-index:400;display:none;align-items:center;justify-content:center}
+.break-overlay.open{display:flex}
+.break-card{background:white;border-radius:28px;padding:40px 36px;width:380px;max-width:90vw;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.18);animation:breakIn .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes breakIn{from{transform:translateY(30px) scale(.9);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+.break-mascot{width:70px;height:76px;margin:0 auto 16px}
+.break-mascot svg{width:100%;height:100%;overflow:visible;animation:obBounce 2s ease-in-out infinite}
+.break-card h2{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;margin-bottom:8px}
+.break-sub{color:var(--muted);font-size:.88rem;line-height:1.65;margin-bottom:20px}
+.break-sub strong{color:var(--ink)}
+.break-timer{width:82px;height:82px;border-radius:50%;background:var(--bg);border:3px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 22px;box-shadow:inset 0 2px 8px rgba(0,0,0,.06)}
+.break-timer-num{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;line-height:1;color:var(--accent)}
+.break-timer-lbl{font-size:.6rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.break-cont{width:100%;background:var(--ink);color:white;border:none;padding:13px;border-radius:50px;font-size:.9rem;font-weight:500;cursor:pointer;margin-bottom:8px}
+.break-cont:hover{opacity:.85}
+.break-skip{background:none;border:none;color:var(--muted);font-size:.8rem;cursor:pointer}
+.break-skip:hover{color:var(--ink)}
+
+/* ══ ADD MODULE MODAL ══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:white;border-radius:24px;padding:32px;width:500px;max-width:90vw;animation:popIn .3s ease}
+.modal h2{font-family:'Playfair Display',serif;font-size:1.3rem;margin-bottom:5px}
+.modal>p{color:var(--muted);font-size:.85rem;margin-bottom:20px}
+.m-field{margin-bottom:14px}
+.m-field label{display:block;font-size:.8rem;font-weight:500;margin-bottom:5px}
+.m-field input,.m-field textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;background:var(--bg);color:var(--ink);outline:none;transition:border-color .2s}
+.m-field input:focus,.m-field textarea:focus{border-color:var(--accent)}
+.m-field textarea{min-height:120px;resize:vertical;line-height:1.6}
+.modal-acts{display:flex;gap:8px;justify-content:flex-end}
+.modal-acts button{padding:10px 20px;border-radius:50px;border:none;font-size:.85rem;font-weight:500;cursor:pointer}
+.modal-acts .cancel{background:var(--bg);color:var(--ink)}
+.modal-acts .confirm{background:var(--ink);color:white}
+
+/* ══ TOAST ══ */
+.toast{position:fixed;bottom:28px;right:28px;background:var(--ink);color:white;padding:12px 20px;border-radius:12px;font-size:.85rem;z-index:300;transform:translateY(80px);opacity:0;transition:transform .3s,opacity .3s}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* TUTORIAL */
+.tut-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500}
+.tut-card{
+  position:fixed;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  z-index:502;
+  background:white;
+  border-radius:24px;
+  padding:28px 28px 22px;
+  width:380px;
+  max-width:92vw;
+  max-height:90vh;
+  overflow-y:auto;
+  box-shadow:0 24px 80px rgba(0,0,0,.3);
+}
+.tut-step-dots{display:flex;gap:5px;margin-bottom:20px;justify-content:center}
+.tut-dot{width:7px;height:7px;border-radius:50%;background:var(--border);transition:all .3s}
+.tut-dot.active{background:var(--accent);width:20px;border-radius:4px}
+.tut-icon{font-size:3rem;text-align:center;margin-bottom:14px;line-height:1}
+.tut-content{margin-bottom:20px}
+.tut-title{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;margin-bottom:10px;color:var(--ink)}
+.tut-desc{font-size:.88rem;color:#555;line-height:1.75}
+.tut-desc strong{color:var(--ink);font-weight:600}
+.tut-desc em{color:var(--accent);font-style:normal;font-weight:500}
+.tut-tip{margin-top:12px;background:#FFF8F5;border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:10px 12px;font-size:.8rem;color:var(--muted);line-height:1.5;display:none}
+.tut-tip.show{display:block}
+.tut-actions{display:flex;align-items:center;justify-content:space-between;padding-top:4px;border-top:1px solid var(--border)}
+.tut-skip{background:none;border:none;font-size:.78rem;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;padding:8px 4px}
+.tut-skip:hover{color:var(--ink)}
+.tut-counter{font-size:.75rem;color:var(--muted);font-family:'DM Sans',sans-serif}
+.tut-next{background:var(--ink);color:white;border:none;padding:10px 22px;border-radius:50px;font-size:.86rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s}
+.tut-next:hover{background:var(--accent)}
+.tut-spotlight{display:none}
+.toast.show{transform:translateY(0);opacity:1}
+
+.sidebar-title{font-size:.68rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<!-- ══ ONBOARDING ══ -->
+<div id="onboarding">
+<div class="ob-card">
+
+  <!-- Step 1: Welcome -->
+  <div class="ob-step active" id="ob1">
+    <div class="ob-mascot">
+      <svg viewBox="0 0 48 56" fill="none">
+        <ellipse cx="24" cy="42" rx="13" ry="11" fill="white" stroke="#1A1A1A" stroke-width="1.8"/>
+        <path d="M11 40 Q6 36 8 30" stroke="#1A1A1A" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+        <path d="M37 40 Q42 36 40 30" stroke="#1A1A1A" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+        <ellipse cx="10" cy="15" rx="5.5" ry="6" fill="white" stroke="#1A1A1A" stroke-width="1.8"/>
+        <ellipse cx="38" cy="15" rx="5.5" ry="6" fill="white" stroke="#1A1A1A" stroke-width="1.8"/>
+        <ellipse cx="24" cy="22" rx="15" ry="13" fill="white" stroke="#1A1A1A" stroke-width="1.8"/>
+        <ellipse cx="18.5" cy="21" rx="2" ry="2.2" fill="#1A1A1A"/>
+        <ellipse cx="29.5" cy="21" rx="2" ry="2.2" fill="#1A1A1A"/>
+        <circle cx="19.2" cy="20.2" r=".6" fill="white"/>
+        <circle cx="30.2" cy="20.2" r=".6" fill="white"/>
+        <ellipse cx="24" cy="25" rx="3" ry="2" fill="#1A1A1A"/>
+        <path d="M20 28 Q24 31 28 28" stroke="#1A1A1A" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+      </svg>
+    </div>
+    <h2 class="ob-title">Welcome to Readwise</h2>
+    <p class="ob-sub">Your AI-powered reading companion. Let's set up your profile and study plan.</p>
+    <div class="ob-field"><label>Your Name</label><input type="text" id="ob-name" placeholder="e.g. Fateme"/></div>
+    <div class="ob-field"><label>Email</label><input type="email" id="ob-email" placeholder="you@example.com"/></div>
+    <div class="ob-field">
+      <label>Anthropic API Key <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--accent);font-size:.75rem;font-weight:400">Get one free →</a></label>
+      <input type="password" id="ob-apikey" placeholder="sk-ant-..."/>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Stored locally on your device only. Never shared.</div>
+    </div>
+    <button class="ob-btn primary" onclick="obNext(1)">Continue →</button>
+  </div>
+
+  <!-- Step 2: Study days -->
+  <div class="ob-step" id="ob2">
+    <div class="ob-dots"><div class="ob-dot active"></div><div class="ob-dot active"></div><div class="ob-dot"></div></div>
+    <h2 class="ob-title">Study Schedule</h2>
+    <p class="ob-sub">Which days of the week will you study?</p>
+    <div class="days-grid" id="daysGrid">
+      <button class="day-btn" data-d="Mon">Mon</button>
+      <button class="day-btn" data-d="Tue">Tue</button>
+      <button class="day-btn" data-d="Wed">Wed</button>
+      <button class="day-btn" data-d="Thu">Thu</button>
+      <button class="day-btn" data-d="Fri">Fri</button>
+      <button class="day-btn" data-d="Sat">Sat</button>
+      <button class="day-btn" data-d="Sun">Sun</button>
+    </div>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px;margin-top:4px">How many modules per study day?</p>
+    <div class="modules-per-day" id="mpdGrid">
+      <button class="mpd-btn" data-n="1">1</button>
+      <button class="mpd-btn" data-n="2">2</button>
+      <button class="mpd-btn" data-n="3">3</button>
+    </div>
+    <button class="ob-btn primary" onclick="obNext(2)" style="margin-top:20px">Continue →</button>
+    <button class="ob-btn secondary" onclick="obBack(1)">← Back</button>
+  </div>
+
+  <!-- Step 3: Goal -->
+  <div class="ob-step" id="ob3">
+    <div class="ob-dots"><div class="ob-dot active"></div><div class="ob-dot active"></div><div class="ob-dot active"></div></div>
+    <h2 class="ob-title">Your Study Goal</h2>
+    <p class="ob-sub">What best describes your goal?</p>
+    <div class="plan-goal-grid" id="goalGrid">
+      <button class="plan-goal-btn" data-g="exam"><span class="pg-icon">📝</span><span class="pg-label">Exam Prep</span><span class="pg-sub">Focused review sessions</span></button>
+      <button class="plan-goal-btn" data-g="deep"><span class="pg-icon">🧠</span><span class="pg-label">Deep Learning</span><span class="pg-sub">Thorough understanding</span></button>
+      <button class="plan-goal-btn" data-g="quick"><span class="pg-icon">⚡</span><span class="pg-label">Quick Overview</span><span class="pg-sub">Get the key ideas fast</span></button>
+      <button class="plan-goal-btn" data-g="research"><span class="pg-icon">🔬</span><span class="pg-label">Research</span><span class="pg-sub">In-depth exploration</span></button>
+    </div>
+    <button class="ob-btn primary" onclick="obFinish()" style="margin-top:20px">Start Learning 🚀</button>
+    <button class="ob-btn secondary" onclick="obBack(2)">← Back</button>
+  </div>
+
+</div>
+</div>
+
+<!-- ══ MAIN APP ══ -->
+<div id="mainApp" style="display:none">
+
+<nav>
+  <div class="nav-brand" onclick="toggleProgress(event)">
+    <div class="mascot-wrap">
+      <svg viewBox="0 0 48 56" fill="none">
+        <ellipse cx="24" cy="42" rx="13" ry="11" fill="white" stroke="#1A1A1A" stroke-width="1.8"/>
+        <path d="M11 40 Q6 36 8 30" stroke="#1A1A1A" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+        <path d="M37 40 Q42 36 40 30" stroke="#1A1A1A" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+        <g class="mascot-head">
+          <ellipse class="mascot-ear-l" cx="10" cy="15" rx="5.5" ry="6" fill="white" stroke="#1A1A1A" stroke-width="1.8"/>
+          <ellipse class="mascot-ear-r" cx="38" cy="15" rx="5.5" ry="6" fill="white" stroke="#1A1A1A" stroke-width="1.8"/>
+          <ellipse cx="24" cy="22" rx="15" ry="13" fill="white" stroke="#1A1A1A" stroke-width="1.8"/>
+          <g class="mascot-eyes">
+            <ellipse cx="18.5" cy="21" rx="2" ry="2.2" fill="#1A1A1A"/>
+            <ellipse cx="29.5" cy="21" rx="2" ry="2.2" fill="#1A1A1A"/>
+            <circle cx="19.2" cy="20.2" r=".6" fill="white"/>
+            <circle cx="30.2" cy="20.2" r=".6" fill="white"/>
+          </g>
+          <ellipse cx="24" cy="25" rx="3" ry="2" fill="#1A1A1A"/>
+          <ellipse cx="24" cy="24.5" rx="1.5" ry="1" fill="#3a3a3a"/>
+          <path d="M20 28 Q24 31 28 28" stroke="#1A1A1A" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+        </g>
+      </svg>
+    </div>
+    <div class="nav-logo">read<span>wise</span><small>learn & retain</small></div>
+    <div class="progress-popup" id="progressPopup">
+      <h4>Your Progress</h4>
+      <div id="popList"></div>
+      <div class="pop-overall"><span>Overall</span><strong id="popOverall">0%</strong></div>
+    </div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-user"><div class="nav-avatar" id="navAvatar">?</div><span id="navName">–</span></div>
+    <button class="nav-btn" style="background:var(--accent)" onclick="openShareModal()">🔗 Share</button>
+    <button class="nav-btn" onclick="openModal()">+ Module</button>
+    <button class="nav-btn" style="background:none;color:var(--muted);border:1.5px solid var(--border);padding:8px 14px;font-size:.78rem" onclick="resetApp()" title="Sign out">↩</button>
+    <button class="nav-btn" style="background:none;color:var(--muted);border:1.5px solid var(--border);padding:8px 14px;font-size:.78rem" onclick="updateApiKey()" title="Update API Key">🔑</button>
+    <button class="nav-btn" style="background:none;color:var(--muted);border:1.5px solid var(--border);padding:8px 14px;font-size:.78rem" onclick="localStorage.removeItem(TUT_KEY);startTutorial()" title="Replay tour">❓</button>
+  </div>
+</nav>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sb-title">Modules</div>
+    <div class="sb-plan-badge" id="planBadge">Set up your study plan</div>
+    <div id="moduleList"></div>
+    <button class="add-mod-btn" onclick="openModal()">+ Add Module</button>
+  </aside>
+
+  <main class="center" id="centerPanel">
+
+    <!-- PREVIEW -->
+    <div id="previewView">
+      <div class="preview-header">
+        <div class="preview-tag" id="prevTag"></div>
+        <div class="preview-title" id="prevTitle">Select a module</div>
+        <div class="preview-meta" id="prevMeta"></div>
+      </div>
+      <div id="prevLearnCards" style="margin-bottom:16px"></div>
+      <div class="preview-card">
+        <h3>🧩 Key Concepts</h3>
+        <div class="concepts-list" id="prevConcepts"></div>
+      </div>
+      <button class="start-reading-btn" onclick="showReading()">Start Reading →</button>
+    </div>
+
+    <!-- READING -->
+    <div id="readingView">
+      <div class="reading-header">
+        <div><div class="reading-tag" id="readTag"></div><div class="reading-title" id="readTitle"></div></div>
+      </div>
+      <div class="reading-card" id="readingContent"></div>
+    </div>
+
+    <!-- QUIZ -->
+    <div id="quizView">
+      <div class="quiz-header">
+        <div class="claude-badge"><div class="claude-logo">AI</div><span>Quiz powered by Claude</span></div>
+      </div>
+      <div class="qprog"><div class="qprog-bar"><div class="qprog-fill" id="qprogFill"></div></div><div class="qprog-txt" id="qprogTxt">0/10</div></div>
+      <div class="loading-quiz" id="quizLoading"><div class="spinner"></div><p>Claude is generating your quiz…</p></div>
+      <div id="qContainer" style="display:none">
+        <div class="q-card"><div class="q-num" id="qNum"></div><div class="q-text" id="qText"></div><div class="options" id="opts"></div></div>
+        <div class="quiz-nav">
+          <button class="qbtn primary" id="nextBtn" onclick="nextQ()">Next →</button>
+          <button class="qbtn secondary" onclick="backToReading()">← Back</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="resultsView">
+      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:24px">
+        <div class="score-circle"><div class="score-num" id="scoreNum">0/10</div><div class="score-lbl">Score</div></div>
+        <div><div class="res-title" id="resTitle"></div><div class="res-sub" id="resSub"></div></div>
+      </div>
+      <div style="font-size:.68rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Knowledge Gaps</div>
+      <div id="gapsList"></div>
+      <div class="res-actions">
+        <button class="res-btn primary" onclick="saveToNotes()">📌 Save to Notes</button>
+        <button class="res-btn secondary" onclick="showSummary()">📖 View Summary</button>
+        <button class="res-btn secondary" onclick="backToReading()">← Re-read</button>
+      </div>
+    </div>
+
+    <!-- SUMMARY -->
+    <div id="summaryView">
+      <div class="summary-header">
+        <div><div style="font-size:.68rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Module Summary</div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700" id="summaryTitle"></div></div>
+        <div class="summary-tabs">
+          <button class="s-tab active" onclick="switchTab('flashcards')">Flashcards</button>
+          <button class="s-tab" onclick="switchTab('mindmap')">Mind Map</button>
+          <button class="s-tab" onclick="switchTab('text')">Summary</button>
+        </div>
+      </div>
+      <div class="s-panel active" id="panel-flashcards">
+        <p class="fc-hint">Click the card to reveal the answer</p>
+        <div class="fc-wrapper"><div class="fc" id="fcCard" onclick="flipCard()">
+          <div class="fc-face front"><div class="fc-label">Concept</div><div class="fc-text" id="fcFront">—</div></div>
+          <div class="fc-face back"><div class="fc-label">Explanation</div><div class="fc-text" id="fcBack">—</div></div>
+        </div></div>
+        <div class="fc-nav">
+          <button class="fc-nav-btn" id="fcPrev" onclick="fcNav(-1)" disabled>← Prev</button>
+          <span class="fc-counter" id="fcCounter">1 / 1</span>
+          <button class="fc-nav-btn" id="fcNext" onclick="fcNav(1)">Next →</button>
+        </div>
+      </div>
+      <div class="s-panel" id="panel-mindmap">
+        <div class="mindmap-container" id="mindmapContainer"><div class="summary-loading"><div class="spinner"></div><p>Generating mind map…</p></div></div>
+      </div>
+      <div class="s-panel" id="panel-text">
+        <div class="text-summary" id="textSummaryContent"><div class="summary-loading"><div class="spinner"></div><p>Generating summary…</p></div></div>
+      </div>
+      <div style="margin-top:16px"><button class="qbtn secondary" onclick="backToResults()">← Back to Results</button></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- BREAK -->
+<div class="break-overlay" id="breakOverlay">
+  <div class="break-card">
+    <div class="break-mascot">
+      <svg viewBox="0 0 48 56" fill="none">
+        <ellipse cx="24" cy="42" rx="13" ry="11" fill="white" stroke="#1A1A1A" stroke-width="1.8"/>
+        <path d="M11 40 Q6 36 8 30" stroke="#1A1A1A" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+        <path d="M37 40 Q42 36 40 30" stroke="#1A1A1A" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+        <ellipse cx="10" cy="15" rx="5.5" ry="6" fill="white" stroke="#1A1A1A" stroke-width="1.8"/>
+        <ellipse cx="38" cy="15" rx="5.5" ry="6" fill="white" stroke="#1A1A1A" stroke-width="1.8"/>
+        <ellipse cx="24" cy="22" rx="15" ry="13" fill="white" stroke="#1A1A1A" stroke-width="1.8"/>
+        <path d="M16 21 Q18.5 19.2 21 21" stroke="#1A1A1A" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+        <path d="M27 21 Q29.5 19.2 32 21" stroke="#1A1A1A" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+        <ellipse cx="24" cy="25" rx="3" ry="2" fill="#1A1A1A"/>
+        <path d="M20 28.5 Q24 32 28 28.5" stroke="#1A1A1A" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+        <text x="33" y="10" font-size="5" fill="#D4622A" font-family="Georgia,serif" font-style="italic">z</text>
+        <text x="37" y="7" font-size="6.5" fill="#D4622A" font-family="Georgia,serif" font-style="italic">z</text>
+        <text x="42" y="3" font-size="8" fill="#D4622A" font-family="Georgia,serif" font-style="italic">z</text>
+      </svg>
+    </div>
+    <h2>Great progress! ☕</h2>
+    <p class="break-sub">You're <strong>halfway through</strong> this module — your brain deserves a rest. Grab a coffee and come back refreshed!</p>
+    <div class="break-timer"><div class="break-timer-num" id="breakNum">10:00</div><div class="break-timer-lbl">remaining</div></div>
+    <button class="break-cont" onclick="closeBreak()">I'm back, let's continue! 🚀</button>
+    <button class="break-skip" onclick="closeBreak()">Skip break</button>
+  </div>
+</div>
+
+<!-- NOTES -->
+<button class="notes-fab" onclick="openNotes()">📝 Notes <span class="badge hidden" id="notesBadge">0</span></button>
+<div class="notes-overlay" id="notesOverlay" onclick="closeNotes()"></div>
+<aside class="notes-panel" id="notesPanel">
+  <div class="notes-hdr"><div class="notes-hdr-title">Your Notes</div><button class="notes-close" onclick="closeNotes()">✕</button></div>
+  <div id="notesList"><div class="empty-notes"><div class="ei">📝</div><p>Knowledge gaps saved after quizzes will appear here.</p></div></div>
+</aside>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2>Add Reading Module</h2>
+    <p>Paste your content — Claude will auto-format and generate everything for you.</p>
+    <div class="m-field"><label>Title</label><input type="text" id="newTitle" placeholder="e.g. Introduction to Neural Networks"/></div>
+    <div class="m-field"><label>Category</label><input type="text" id="newCat" placeholder="e.g. Deep Learning, NLP…"/></div>
+    <div class="m-field">
+      <label style="display:flex;align-items:center;justify-content:space-between">
+        <span>Content</span>
+        <button class="ed-btn" id="autoFormatBtn" onclick="autoFormatContent()" style="background:var(--accent);color:white;border-color:var(--accent);font-size:.75rem;padding:4px 12px">✨ Auto-Format</button>
+      </label>
+      <div class="editor-toolbar">
+        <button class="ed-btn" onclick="edInsert('## ','','Heading')">H2</button>
+        <button class="ed-btn" onclick="edInsert('### ','','Heading')">H3</button>
+        <div class="ed-sep"></div>
+        <button class="ed-btn" onclick="edWrap('**','**')"><b>B</b></button>
+        <button class="ed-btn" onclick="edWrap('*','*')"><i>I</i></button>
+        <button class="ed-btn" onclick="edWrap('`','`')">&#96;&#96;</button>
+        <div class="ed-sep"></div>
+        <button class="ed-btn" onclick="edInsert('- ','','List item')">• List</button>
+        <button class="ed-btn" onclick="edInsert('> ','','Quote')">❝</button>
+        <div class="ed-sep"></div>
+        <button class="ed-btn" onclick="edCodeBlock()">{ } Code</button>
+        <div class="ed-sep"></div>
+        <button class="ed-btn" onclick="edInsert('---\n','')">— HR</button>
+      </div>
+      <textarea id="newContent" placeholder="Paste your content here, then click ✨ Auto-Format to clean it up automatically…"></textarea>
+    </div>
+    <div class="modal-acts">
+      <button class="cancel" onclick="closeModal()">Cancel</button>
+      <button class="confirm" onclick="addModule()">Add Module</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE MODAL -->
+<div class="modal-overlay" id="shareModalOverlay">
+  <div class="modal" style="max-width:480px">
+    <h2>🔗 Share Your Modules</h2>
+    <p>Others can import your public modules using your Share ID.</p>
+
+    <!-- My Share ID -->
+    <div style="background:var(--bg);border-radius:14px;padding:18px;margin-bottom:18px;border:1px solid var(--border)">
+      <div style="font-size:.72rem;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Your Share ID</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div id="myShareId" style="font-family:'Courier New',monospace;font-size:1rem;font-weight:700;color:var(--ink);flex:1;letter-spacing:1px">—</div>
+        <button onclick="copyShareId()" style="background:var(--ink);color:white;border:none;padding:8px 14px;border-radius:8px;font-size:.8rem;cursor:pointer;white-space:nowrap">Copy ID</button>
+      </div>
+    </div>
+
+    <!-- Which modules to share -->
+    <div style="font-size:.8rem;font-weight:500;margin-bottom:8px">Select modules to make public:</div>
+    <div id="shareModuleList" style="max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:18px"></div>
+    <button class="confirm" style="width:100%;padding:12px;border-radius:50px;border:none;background:var(--accent);color:white;font-size:.9rem;font-weight:500;cursor:pointer;margin-bottom:16px" onclick="publishModules()">📤 Publish Selected</button>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin-bottom:16px">
+
+    <!-- Import from someone else -->
+    <div style="font-size:.8rem;font-weight:500;margin-bottom:8px">Import modules from a Share ID:</div>
+    <div style="display:flex;gap:8px">
+      <input type="text" id="importIdInput" placeholder="Paste someone's Share ID…" style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:.88rem;background:var(--bg);outline:none;font-family:'DM Sans',sans-serif"/>
+      <button onclick="importModules()" style="background:var(--ink);color:white;border:none;padding:10px 16px;border-radius:10px;font-size:.85rem;cursor:pointer;white-space:nowrap">Import</button>
+    </div>
+    <div id="importResult" style="margin-top:10px;font-size:.82rem;color:var(--muted)"></div>
+
+    <div class="modal-acts" style="margin-top:16px">
+      <button class="cancel" onclick="closeShareModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- TUTORIAL OVERLAY -->
+<div id="tutorialOverlay" style="display:none">
+  <div class="tut-backdrop"></div>
+  <div class="tut-card" id="tutCard">
+    <div class="tut-step-dots" id="tutDots"></div>
+    <div class="tut-icon" id="tutIcon"></div>
+    <div class="tut-content">
+      <div class="tut-title" id="tutTitle"></div>
+      <div class="tut-desc" id="tutDesc"></div>
+      <div class="tut-tip" id="tutTip"></div>
+    </div>
+    <div class="tut-actions">
+      <button class="tut-skip" onclick="endTutorial()">Skip tour</button>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="tut-counter" id="tutCounter"></span>
+        <button class="tut-next" id="tutNextBtn" onclick="tutNext()">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+</div><!-- end mainApp -->
+
+<script>
+// ════ SUPABASE CONFIG ════
+// Run this SQL in Supabase SQL Editor:
+/*
+create table if not exists readwise_users (
+  email text primary key,
+  data jsonb not null,
+  updated_at timestamptz default now()
+);
+alter table readwise_users enable row level security;
+create policy "open" on readwise_users for all using (true) with check (true);
+
+create table if not exists readwise_shared (
+  share_id text primary key,
+  owner_name text,
+  modules jsonb not null,
+  updated_at timestamptz default now()
+);
+alter table readwise_shared enable row level security;
+create policy "open_shared" on readwise_shared for all using (true) with check (true);
+*/
+const SUPABASE_URL = 'https://qkojgfbbfftalsuldgmc.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrb2pnZmJiZmZ0YWxzdWxkZ21jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5NjA3NjAsImV4cCI6MjA4OTUzNjc2MH0.Fgi9whRwYaFHhtrA1C786oJZNOeUBSp7n0OeswgRZHA';
+
+const STORAGE_KEY = 'readwise_v1';
+let _dbReady = true;
+
+// Anthropic API Key — stored in localStorage
+function getApiKey(){ return localStorage.getItem('rw_api_key')||''; }
+function setApiKey(k){ localStorage.setItem('rw_api_key',k); }
+
+// ── DB helpers ──
+// ── Supabase headers helper ──
+function sbHeaders(extra={}){
+  return {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`,
+    ...extra
+  };
+}
+
+async function dbSave(email, payload){
+  if(!_dbReady){ lsSave(payload); return; }
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/readwise_users`, {
+      method: 'POST',
+      headers: sbHeaders({'Prefer':'resolution=merge-duplicates'}),
+      body: JSON.stringify({ email, data: payload, updated_at: new Date().toISOString() })
+    });
+    if(!res.ok){ const e=await res.text(); console.error('dbSave error:',e); }
+    lsSave(payload);
+  }catch(e){ console.error('dbSave:',e); lsSave(payload); }
+}
+
+async function dbLoad(email){
+  if(!_dbReady) return null;
+  try{
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/readwise_users?email=eq.${encodeURIComponent(email)}&select=data`,
+      { headers: sbHeaders() }
+    );
+    if(!res.ok){ console.error('dbLoad error:',res.status); return null; }
+    const rows = await res.json();
+    return rows && rows[0] ? rows[0].data : null;
+  }catch(e){ console.error('dbLoad:',e); return null; }
+}
+
+// ── localStorage fallback ──
+function lsSave(payload){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(payload)); }catch(e){}
+}
+function lsLoad(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+
+// ── Public save/load ──
+async function saveToStorage(){
+  const payload = { user: S.user, modules: S.modules, notes: S.notes };
+  if(S.user.email) await dbSave(S.user.email, payload);
+  else lsSave(payload);
+}
+
+async function loadFromStorage(){
+  // First try localStorage for instant boot
+  const local = lsLoad();
+  if(local && local.user && local.user.name){
+    applySession(local);
+    // Then silently sync from DB in background
+    if(_dbReady && local.user.email){
+      dbLoad(local.user.email).then(remote=>{
+        if(remote && remote.modules && remote.modules.length >= local.modules.length){
+          applySession(remote);
+          lsSave(remote);
+          renderSidebar();
+          assignStudyPlan();
+          if(S.notes.length) renderNotes();
+        }
+      });
+    }
+    return true;
+  }
+  return false;
+}
+
+async function loadByEmail(email){
+  // Called during login to fetch full profile from DB
+  const remote = await dbLoad(email);
+  if(remote){ applySession(remote); lsSave(remote); return true; }
+  return false;
+}
+
+function applySession(saved){
+  if(saved.user)    S.user    = saved.user;
+  if(saved.modules && saved.modules.length) S.modules = saved.modules;
+  if(saved.notes)   S.notes   = saved.notes;
+}
+
+// ════ STATE ════
+const S = {
+  user: { name:'', email:'', days:[], mpd:1, goal:'deep' },
+  modules: [],
+  activeIdx: -1,
+  quiz: [], answers: [], currentQ: 0,
+  notes: [], gaps: [],
+  flashcards: [], fcIdx: 0, fcFlipped: false,
+  summaryGenerated: {}
+};
+
+// Default seed module (only added if no saved data)
+const SEED_MODULE = {
+  id:1, title:'Transformer Architecture', category:'Deep Learning',
+  content:`The Transformer model, introduced in the paper "Attention Is All You Need" (Vaswani et al., 2017), revolutionized natural language processing by relying entirely on attention mechanisms rather than recurrence.
+
+**Core Components:**
+The Transformer consists of an encoder and a decoder stack. Each encoder layer has two sub-layers: a multi-head self-attention mechanism and a feed-forward network. The decoder has a third sub-layer for cross-attention over the encoder output.
+
+**Self-Attention:**
+Self-attention allows each token to "look at" every other token in the sequence simultaneously. It computes Query (Q), Key (K), and Value (V) matrices from the input, then the attention score is: softmax(QK^T / √d_k) × V.
+
+**Positional Encoding:**
+Since Transformers have no recurrence, positional encodings are added to embeddings to inject sequence order information using sine and cosine functions.
+
+**Why It Matters:**
+Transformers enabled massive parallelization during training and became the backbone of BERT, GPT, T5, and virtually every modern LLM.`,
+  done:false, score:undefined
+};
+
+// ── Boot ──
+loadFromStorage().then(hasSession=>{
+  if(!hasSession){
+    S.modules.push(SEED_MODULE);
+    // show onboarding (already visible by default)
+  } else {
+    launchApp();
+  }
+});
+
+function launchApp(){
+  document.getElementById('onboarding').style.display='none';
+  document.getElementById('mainApp').style.display='block';
+  document.getElementById('navName').textContent=S.user.name;
+  document.getElementById('navAvatar').textContent=(S.user.name[0]||'?').toUpperCase();
+  renderSidebar();
+  assignStudyPlan();
+  if(S.notes.length) renderNotes();
+  selectModule(0);
+  // Start tutorial for first-time users
+  setTimeout(startTutorial, 800);
+}
+
+// ════ ONBOARDING ════
+document.getElementById('daysGrid').addEventListener('click', e=>{
+  const b = e.target.closest('.day-btn'); if(!b) return;
+  b.classList.toggle('sel');
+});
+document.getElementById('mpdGrid').addEventListener('click', e=>{
+  const b = e.target.closest('.mpd-btn'); if(!b) return;
+  document.querySelectorAll('.mpd-btn').forEach(x=>x.classList.remove('sel'));
+  b.classList.add('sel');
+});
+document.getElementById('goalGrid').addEventListener('click', e=>{
+  const b = e.target.closest('.plan-goal-btn'); if(!b) return;
+  document.querySelectorAll('.plan-goal-btn').forEach(x=>x.classList.remove('sel'));
+  b.classList.add('sel');
+});
+
+async function obNext(from) {
+  if(from===1){
+    const name=document.getElementById('ob-name').value.trim();
+    const email=document.getElementById('ob-email').value.trim();
+    const apikey=document.getElementById('ob-apikey').value.trim();
+    if(!name){showToast('Please enter your name');return;}
+    if(apikey) setApiKey(apikey);
+    S.user.name=name; S.user.email=email;
+
+    // Check DB for existing user — if found, skip plan setup entirely
+    if(email && _dbReady){
+      showToast('Checking your account…');
+      const found = await loadByEmail(email);
+      if(found && S.user.days && S.user.days.length){
+        // Returning user with full profile — go straight to app
+        launchApp();
+        return;
+      }
+    }
+  }
+  if(from===2){
+    const days=[...document.querySelectorAll('.day-btn.sel')].map(b=>b.dataset.d);
+    if(!days.length){showToast('Pick at least one day');return;}
+    const mpd=document.querySelector('.mpd-btn.sel');
+    S.user.days=days; S.user.mpd=mpd?+mpd.dataset.n:1;
+  }
+  document.getElementById('ob'+from).classList.remove('active');
+  document.getElementById('ob'+(from+1)).classList.add('active');
+}
+function obBack(to){
+  document.getElementById('ob'+(to+1)).classList.remove('active');
+  document.getElementById('ob'+to).classList.add('active');
+}
+async function obFinish(){
+  const sel=document.querySelector('.plan-goal-btn.sel');
+  S.user.goal=sel?sel.dataset.g:'deep';
+  launchApp();
+  await saveToStorage();
+}
+
+// ════ STUDY PLAN ════
+function assignStudyPlan(){
+  const days=S.user.days; if(!days.length) return;
+  const dayNames=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  let dayIdx=0, slotInDay=0;
+  S.modules.forEach(m=>{
+    const d=days[dayIdx%days.length];
+    m.planDay=d; slotInDay++;
+    if(slotInDay>=S.user.mpd){slotInDay=0;dayIdx++;}
+  });
+  const today=dayNames[new Date().getDay()===0?6:new Date().getDay()-1];
+  const badge=document.getElementById('planBadge');
+  const todayMods=S.modules.filter(m=>m.planDay===today);
+  badge.innerHTML=`<strong>📅 Today (${today})</strong>${todayMods.length?todayMods.map(m=>`<br>· ${m.title}`).join(''):'<br>No modules scheduled'}`;
+  renderSidebar();
+}
+
+// ════ SIDEBAR ════
+function renderSidebar(){
+  const list=document.getElementById('moduleList'); list.innerHTML='';
+  const today=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][new Date().getDay()===0?6:new Date().getDay()-1];
+  S.modules.forEach((m,i)=>{
+    const el=document.createElement('div');
+    el.className='mod-item'+(i===S.activeIdx?' active':'');
+    const isToday=m.planDay===today;
+    el.innerHTML=`<div class="mod-dot ${m.done?'done':i===S.activeIdx?'active':''}"></div>
+      <div class="mod-info">
+        <div class="mod-name">${m.title}</div>
+        <div class="mod-meta">${m.category}${m.score!==undefined?' · '+m.score+'%':''}</div>
+        ${m.planDay?`<span class="mod-plan-chip${isToday?' today':''}">${isToday?'📅 Today':m.planDay}</span>`:''}
+        ${m.importedFrom?`<span class="mod-plan-chip" style="background:#f0f3ff;color:var(--accent2)">from ${m.importedFrom}</span>`:''}
+      </div>
+      <button class="mod-delete-btn" onclick="event.stopPropagation();deleteModule(${i})" title="Delete">✕</button>`;
+    el.onclick=()=>selectModule(i);
+    list.appendChild(el);
+  });
+}
+
+function deleteModule(i){
+  const title=S.modules[i].title;
+  const deleted=S.modules.splice(i,1)[0];
+  if(S.activeIdx>=S.modules.length) S.activeIdx=S.modules.length-1;
+  if(S.activeIdx<0) S.activeIdx=0;
+  assignStudyPlan();
+  renderSidebar();
+  if(S.modules.length) selectModule(S.activeIdx);
+  else { hide('readingView');hide('previewView');hide('quizView');hide('resultsView');hide('summaryView'); }
+
+  // Undo toast
+  let undone=false;
+  const t=document.getElementById('toast');
+  t.innerHTML=`Deleted "${title}" <button onclick="undoDelete()" style="margin-left:10px;background:none;border:none;color:var(--accent);cursor:pointer;font-weight:600;font-size:.88rem">Undo</button>`;
+  t.classList.add('show');
+  window._lastDeleted={module:deleted,idx:i};
+  const timer=setTimeout(()=>{
+    if(!undone){ saveToStorage(); t.classList.remove('show'); }
+  },4000);
+  window._deleteTimer=timer;
+}
+
+function undoDelete(){
+  if(!window._lastDeleted) return;
+  clearTimeout(window._deleteTimer);
+  const {module,idx}=window._lastDeleted;
+  S.modules.splice(idx,0,module);
+  window._lastDeleted=null;
+  assignStudyPlan();
+  saveToStorage();
+  renderSidebar();
+  selectModule(idx);
+  document.getElementById('toast').classList.remove('show');
+  showToast('✓ Module restored');
+}
+
+function selectModule(i){
+  S.activeIdx=i;
+  // Clear generated content so new module gets fresh generation
+  delete S.summaryGenerated[S.modules[i].id];
+  showPreview();
+  renderSidebar();
+  document.getElementById('centerPanel').scrollTop=0;
+}
+
+// ════ PREVIEW — Claude powered ════
+const _previewCache = {}; // cache by module id
+
+function showPreview(){
+  const m=S.modules[S.activeIdx];
+  hide('readingView'); hide('quizView'); hide('resultsView'); hide('summaryView');
+  show('previewView');
+
+  document.getElementById('prevTag').textContent=m.category;
+  document.getElementById('prevTitle').textContent=m.title;
+  const words=m.content.split(/\s+/).length;
+  document.getElementById('prevMeta').innerHTML=`<span>~${Math.ceil(words/200)} min read</span><span>${words} words</span>`;
+
+  // Show loading state
+  document.getElementById('prevLearnCards').innerHTML=`
+    <div class="learn-cards-header">✨ What you'll learn</div>
+    <div style="display:flex;align-items:center;gap:10px;padding:16px 0;color:var(--muted);font-size:.88rem">
+      <div class="spinner" style="width:18px;height:18px;border-width:2px"></div> Analysing module…
+    </div>`;
+  document.getElementById('prevConcepts').innerHTML='';
+
+  // Use cache if available
+  if(_previewCache[m.id]){
+    renderPreviewData(_previewCache[m.id]);
+    return;
+  }
+
+  // Call Claude to analyse the module
+  generatePreview(m);
+}
+
+async function generatePreview(m){
+  const apiKey=getApiKey();
+  if(!apiKey){
+    document.getElementById('prevLearnCards').innerHTML='<div class="learn-cards-header">✨ What you\'ll learn</div><div style="padding:16px;color:var(--muted);font-size:.88rem">⚠ Please set your API key — click 🔑 in the top right.</div>';
+    return;
+  }
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:`You are analyzing an educational module. Read the text carefully and extract meaningful learning objectives.
+
+Return ONLY this JSON structure (no markdown, no explanation, just JSON):
+{"learn_cards":[{"title":"concise topic name","desc":"one sentence explaining the core idea"}],"key_concepts":[{"term":"term","def":"brief definition"}]}
+
+Rules:
+- learn_cards: 4-5 cards. Title = what the student will understand. Desc = plain English explanation of the concept. Never copy code. Describe what code TEACHES.
+- key_concepts: 5-6 important terms with definitions. No code snippets.
+- Be specific to THIS content, not generic.
+
+TEXT TO ANALYZE:
+${m.content.slice(0,3500)}`}]
+      })
+    });
+    
+    const data=await res.json();
+    
+    // Show API errors clearly
+    if(data.error){
+      showToast('API Error: '+data.error.message);
+      throw new Error(data.error.message);
+    }
+    
+    const raw=data.content.map(c=>c.text||'').join('').trim();
+    // Strip markdown fences if present
+    const jsonStr=raw.replace(/^```(?:json)?\s*/,'').replace(/\s*```$/,'').trim();
+    const parsed=JSON.parse(jsonStr);
+    
+    if(!parsed.learn_cards||!parsed.learn_cards.length) throw new Error('Empty response');
+    
+    _previewCache[m.id]=parsed;
+    renderPreviewData(parsed);
+    
+  }catch(e){
+    console.error('Preview generation failed:',e.message);
+    showToast('Preview: '+e.message.slice(0,60));
+    
+    // Meaningful fallback — extract prose paragraphs only
+    const clean=m.content
+      .replace(/```[\s\S]*?```/g,'')
+      .replace(/`[^`]+`/g,'')
+      .replace(/^#{1,3}.+/gm,'')
+      .replace(/^\*\*[^*]+:\*\*/gm,'');
+    
+    const sentences=clean.split(/[.!?]\s+/)
+      .map(s=>s.replace(/\*\*/g,'').replace(/\n/g,' ').trim())
+      .filter(s=>s.length>40&&s.length<200&&!/def |import |return |class |if |for |\(|\)|{|}/.test(s));
+    
+    const fallback={
+      learn_cards: sentences.slice(0,4).map(s=>({
+        title: s.split(' ').slice(0,5).join(' ')+'…',
+        desc: s
+      })),
+      key_concepts:[]
+    };
+    _previewCache[m.id]=fallback;
+    renderPreviewData(fallback);
+  }
+}
+
+function renderPreviewData(data){
+  const ICONS=['🧠','⚙️','🔍','📐','🚀','💡','🔗','📊','🎯','🧩'];
+  const cards=data.learn_cards||[];
+  const concepts=data.key_concepts||[];
+
+  if(cards.length){
+    let html=`<div class="learn-cards-header">✨ What you'll learn</div><div class="learn-cards-grid">`;
+    cards.forEach((c,i)=>{
+      html+=`<div class="learn-card">
+        <span class="learn-card-icon">${ICONS[i%ICONS.length]}</span>
+        <div class="learn-card-title">${c.title}</div>
+        <div class="learn-card-desc">${c.desc}</div>
+      </div>`;
+    });
+    html+=`</div>`;
+    document.getElementById('prevLearnCards').innerHTML=html;
+  } else {
+    document.getElementById('prevLearnCards').innerHTML='';
+  }
+
+  window._chipData=concepts;
+  document.getElementById('prevConcepts').innerHTML=concepts.map((c,i)=>
+    `<div class="concept-chip" style="animation-delay:${i*50}ms" onclick="toggleChip(this,${i})" data-idx="${i}">${c.term||c}</div>`
+  ).join('');
+}
+
+function toggleChip(el, idx){
+  const chip=window._chipData&&window._chipData[idx];
+  if(!chip) return;
+  const label=chip.term||chip.label||chip||'';
+  const def=chip.def||chip.explanation||chip.description||'';
+  if(el.classList.contains('open')){
+    el.classList.remove('open');
+    el.innerHTML=label;
+    return;
+  }
+  // close any other open chips first
+  document.querySelectorAll('.concept-chip.open').forEach(c=>{
+    const i=+c.dataset.idx;
+    const d=window._chipData[i];
+    c.classList.remove('open');
+    c.innerHTML=d?d.term||d.label||d:'';
+  });
+  el.classList.add('open');
+  el.innerHTML=`<div class="chip-label">${label}<button class="chip-close" onclick="event.stopPropagation();toggleChip(this.closest('.concept-chip'),${idx})">✕</button></div>${def?`<div class="chip-def">${def}</div>`:''}`;
+}
+
+// ════ READING ════
+const _breakShownFor=new Set(); // tracks module IDs that already showed break
+let breakTimer=null;
+
+function showReading(){
+  const m=S.modules[S.activeIdx];
+  hide('previewView'); hide('quizView'); hide('resultsView'); hide('summaryView');
+  show('readingView');
+  document.getElementById('centerPanel').scrollTop=0;
+  document.getElementById('readTag').textContent=m.category;
+  document.getElementById('readTitle').textContent=m.title;
+  // break tracking handled by _breakShownFor Set
+  const moduleId=m.id;
+
+  const paras=m.content.split('\n\n').map(p=>p.trim()).filter(Boolean);
+  const midIdx=Math.floor(paras.length/2);
+  let html='';
+  paras.forEach((p,i)=>{
+    if(i===midIdx) html+=`<div id="midAnchor" style="height:8px;margin:4px 0"></div>`;
+    html+=mdToHtml(p+'\n');
+  });
+  html+=`<hr class="rc-divider">
+    <div class="quiz-invite">
+      <div class="qi-icon">🎯</div>
+      <h3>Ready to test yourself?</h3>
+      <p>You've finished <em>${m.title}</em>. Choose what to do next.</p>
+      <div class="quiz-invite-btns">
+        <button class="start-quiz-btn" onclick="startQuiz()"><div class="claude-logo">AI</div>Take the Quiz</button>
+        <button class="summary-btn" onclick="showSummary()">📖 View Summary</button>
+      </div>
+    </div>`;
+  document.getElementById('readingContent').innerHTML=html;
+
+  // Fire break popup when user has scrolled 50% of the content — never on load
+  const panel=document.getElementById('centerPanel');
+  const onScroll=()=>{
+    if(_breakShownFor.has(moduleId)) return panel.removeEventListener('scroll',onScroll);
+    const scrolled=panel.scrollTop;
+    const total=panel.scrollHeight-panel.clientHeight;
+    if(total>0 && scrolled/total >= 0.5){
+      _breakShownFor.add(moduleId);
+      panel.removeEventListener('scroll',onScroll);
+      openBreak();
+    }
+  };
+  panel.removeEventListener('scroll',panel._breakHandler||null);
+  panel._breakHandler=onScroll;
+  // Only attach listener if break hasn't been shown for this module yet
+  if(!_breakShownFor.has(moduleId)){
+    panel.addEventListener('scroll',onScroll);
+  }
+}
+
+// ════ MARKDOWN PARSER ════
+function mdToHtml(content){
+  // Escape HTML entities first to prevent XSS
+  const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  const lines = content.split('\n');
+  let html = '';
+  let i = 0;
+  let inList = false;
+  let inOrderedList = false;
+
+  function closeLists(){
+    if(inList){ html += '</ul>'; inList = false; }
+    if(inOrderedList){ html += '</ol>'; inOrderedList = false; }
+  }
+
+  function inlineFormat(text){
+    return text
+      // inline code `code`
+      .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
+      // bold **text**
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      // italic *text* (but not **)
+      .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>')
+      // italic _text_
+      .replace(/(?<!_)_([^_]+)_(?!_)/g, '<em>$1</em>');
+  }
+
+  while(i < lines.length){
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // Code block ```
+    if(trimmed.startsWith('```')){
+      closeLists();
+      const lang = trimmed.slice(3).trim() || '';
+      i++;
+      let code = '';
+      while(i < lines.length && !lines[i].trim().startsWith('```')){
+        code += esc(lines[i]) + '\n';
+        i++;
+      }
+      html += `<div class="rc-code-block"><div class="rc-code-lang">${lang||'code'}</div><pre><code>${code.trimEnd()}</code></pre></div>`;
+      i++; continue;
+    }
+
+    // Horizontal rule --- or ***
+    if(/^[-*]{3,}$/.test(trimmed)){
+      closeLists();
+      html += '<hr class="rc-divider-md">';
+      i++; continue;
+    }
+
+    // H1 #
+    if(/^# /.test(trimmed)){
+      closeLists();
+      html += `<h1 class="rc-h1">${inlineFormat(esc(trimmed.slice(2).trim()))}</h1>`;
+      i++; continue;
+    }
+    // H2 ##
+    if(/^## /.test(trimmed)){
+      closeLists();
+      html += `<h2 class="rc-h2">${inlineFormat(esc(trimmed.slice(3).trim()))}</h2>`;
+      i++; continue;
+    }
+    // H3 ###
+    if(/^### /.test(trimmed)){
+      closeLists();
+      html += `<h3 class="rc-h3">${inlineFormat(esc(trimmed.slice(4).trim()))}</h3>`;
+      i++; continue;
+    }
+
+    // Section label **Title:** (standalone line)
+    if(/^\*\*[^*]+:\*\*$/.test(trimmed)){
+      closeLists();
+      const label = trimmed.replace(/\*\*/g,'').replace(/:$/,'');
+      html += `<div class="rc-label">${esc(label)}</div>`;
+      i++; continue;
+    }
+
+    // Blockquote >
+    if(trimmed.startsWith('> ')){
+      closeLists();
+      html += `<blockquote class="rc-blockquote">${inlineFormat(esc(trimmed.slice(2)))}</blockquote>`;
+      i++; continue;
+    }
+
+    // Unordered list - or *
+    if(/^[-*] /.test(trimmed)){
+      if(!inList){ html += '<ul class="rc-list">'; inList = true; }
+      html += `<li>${inlineFormat(esc(trimmed.slice(2)))}</li>`;
+      i++; continue;
+    }
+
+    // Ordered list 1. 2.
+    if(/^\d+\. /.test(trimmed)){
+      if(!inOrderedList){ html += '<ol class="rc-list rc-ol">'; inOrderedList = true; }
+      html += `<li>${inlineFormat(esc(trimmed.replace(/^\d+\. /,'')))}</li>`;
+      i++; continue;
+    }
+
+    // Empty line
+    if(!trimmed){
+      closeLists();
+      i++; continue;
+    }
+
+    // Regular paragraph
+    closeLists();
+    html += `<p>${inlineFormat(esc(trimmed))}</p>`;
+    i++;
+  }
+  closeLists();
+  return html;
+}
+
+function renderPara(p){ return mdToHtml(p+'\n'); }
+
+// ════ BREAK ════
+function openBreak(){
+  document.getElementById('breakOverlay').classList.add('open');
+  let s=600; updateBreak(s);
+  breakTimer=setInterval(()=>{s--;updateBreak(s);if(s<=0)closeBreak();},1000);
+}
+function updateBreak(s){document.getElementById('breakNum').textContent=`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;}
+function closeBreak(){clearInterval(breakTimer);document.getElementById('breakOverlay').classList.remove('open');}
+
+// ════ QUIZ ════
+async function startQuiz(){
+  const m=S.modules[S.activeIdx];
+  if(!getApiKey()){ showToast('⚠ Set your API key first — click 🔑'); return; }
+  hide('readingView'); hide('previewView'); hide('resultsView'); hide('summaryView');
+  show('quizView');
+  document.getElementById('centerPanel').scrollTop=0;
+  document.getElementById('quizLoading').style.display='flex';
+  document.getElementById('qContainer').style.display='none';
+  S.quiz=[]; S.answers=[]; S.currentQ=0;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true','x-api-key':getApiKey(),'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:2000,
+        messages:[{role:'user',content:`Generate exactly 10 multiple-choice questions testing SPECIFIC facts from this text. Each question must be about a concrete detail, name, number, formula, or concept explicitly mentioned in the text.
+
+Return ONLY valid JSON array, no markdown:
+[{"question":"...","options":["A. ...","B. ...","C. ...","D. ..."],"correct":0,"topic":"...","explanation":"..."}]
+
+TEXT:
+${m.content}`}]
+      })
+    });
+    const data=await res.json();
+    if(data.error) throw new Error(data.error.message);
+    const raw=data.content.map(c=>c.text||'').join('').trim().replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'');
+    S.quiz=JSON.parse(raw);
+  }catch(e){
+    console.error(e);
+    showToast('⚠ Using offline quiz');
+    S.quiz=offlineQuiz(m);
+  }
+
+  S.quiz=S.quiz.slice(0,10);
+  S.answers=new Array(S.quiz.length).fill(-1);
+  document.getElementById('quizLoading').style.display='none';
+  document.getElementById('qContainer').style.display='block';
+  renderQ();
+}
+
+function offlineQuiz(m){
+  const text=m.content.replace(/\*\*/g,'');
+  const sents=text.split(/(?<=[.?!])\s+/).map(s=>s.trim()).filter(s=>s.length>60&&s.length<250);
+  const sections=(m.content.match(/\*\*([^*]+):\*\*/g)||[]).map(s=>s.replace(/\*\*/g,'').replace(':','').trim());
+  const out=[];
+  sents.slice(0,8).forEach((sent,i)=>{
+    const words=sent.split(' ');
+    const ki=Math.floor(words.length*.55);
+    const kw=words.slice(ki,ki+3).join(' ').replace(/[,.:;()]/g,'');
+    if(kw.length<3) return;
+    out.push({
+      question:`Complete the statement from the reading: "${words.slice(0,ki).join(' ')} ___"`,
+      options:[`A. ${kw}`,`B. neural networks`,`C. gradient descent`,`D. random initialization`],
+      correct:0,topic:sections[i%sections.length]||m.category,
+      explanation:`The text states: "${sent.slice(0,120)}"`
+    });
+  });
+  sections.forEach(sec=>{
+    if(out.length>=10) return;
+    out.push({question:`What concept is covered in the "${sec}" section?`,
+      options:[`A. A key part of ${m.title}`,`B. Unrelated history`,`C. Statistical methods only`,`D. None of the above`],
+      correct:0,topic:sec,explanation:`The "${sec}" section is a core part of ${m.title}.`});
+  });
+  while(out.length<10) out.push({question:`"${m.title}" is primarily a topic in which field?`,
+    options:[`A. ${m.category}`,`B. Philosophy`,`C. Chemistry`,`D. Literature`],correct:0,topic:m.category,explanation:`${m.title} belongs to ${m.category}.`});
+  return out.slice(0,10);
+}
+
+function renderQ(){
+  const q=S.quiz[S.currentQ],tot=S.quiz.length;
+  document.getElementById('qNum').textContent=`Question ${S.currentQ+1} of ${tot}`;
+  document.getElementById('qText').textContent=q.question;
+  document.getElementById('qprogTxt').textContent=`${S.currentQ+1}/${tot}`;
+  document.getElementById('qprogFill').style.width=`${((S.currentQ+1)/tot)*100}%`;
+  const c=document.getElementById('opts'); c.innerHTML='';
+  q.options.forEach((opt,i)=>{
+    const b=document.createElement('button'); b.className='opt-btn'+(S.answers[S.currentQ]===i?' selected':'');
+    b.innerHTML=`<span class="opt-letter">${'ABCD'[i]}</span><span>${opt.replace(/^[A-D]\.\s*/,'')}</span>`;
+    b.onclick=()=>{S.answers[S.currentQ]=i;document.querySelectorAll('.opt-btn').forEach((x,j)=>x.classList.toggle('selected',j===i));};
+    c.appendChild(b);
+  });
+  document.getElementById('nextBtn').textContent=S.currentQ===tot-1?'Finish →':'Next →';
+}
+function nextQ(){
+  if(S.answers[S.currentQ]===-1){showToast('Pick an answer first');return;}
+  if(S.currentQ<S.quiz.length-1){S.currentQ++;renderQ();}else showResults();
+}
+function backToReading(){hide('quizView');hide('resultsView');hide('summaryView');hide('previewView');show('readingView');}
+function backToResults(){hide('summaryView');show('resultsView');}
+
+// ════ RESULTS ════
+function showResults(){
+  hide('quizView'); show('resultsView');
+  document.getElementById('centerPanel').scrollTop=0;
+  const correct=S.answers.filter((a,i)=>a===S.quiz[i].correct).length;
+  const pct=Math.round((correct/S.quiz.length)*100);
+  document.getElementById('scoreNum').textContent=`${correct}/${S.quiz.length}`;
+  const msgs=[[90,'Excellent! 🎉','Strong grasp of this material.'],[70,'Good job! 👍','A few areas to review.'],[50,'Keep going! 📚','Review the gaps below.'],[0,'More review needed 🔍','Focus on the gaps below.']];
+  const[,t,s]=msgs.find(([th])=>pct>=th);
+  document.getElementById('resTitle').textContent=t;
+  document.getElementById('resSub').textContent=s;
+  S.gaps=S.quiz.filter((_,i)=>S.answers[i]!==S.quiz[i].correct).map(q=>({topic:q.topic,explanation:q.explanation}));
+  const gl=document.getElementById('gapsList');
+  gl.innerHTML=S.gaps.length?'':'<p style="color:var(--success);font-size:.88rem;margin-bottom:8px">✓ Perfect score — no gaps!</p>';
+  S.gaps.forEach(g=>{const el=document.createElement('div');el.className='gap-card';el.innerHTML=`<div class="gap-topic">${g.topic}<span class="gap-tag">Review</span></div><div class="gap-desc">${g.explanation}</div>`;gl.appendChild(el);});
+  S.modules[S.activeIdx].done=true; S.modules[S.activeIdx].score=pct; renderSidebar(); saveToStorage();
+}
+
+// ════ SUMMARY ════
+async function showSummary(){
+  hide('readingView'); hide('resultsView'); hide('quizView'); hide('previewView');
+  show('summaryView');
+  document.getElementById('centerPanel').scrollTop=0;
+  const m=S.modules[S.activeIdx];
+  document.getElementById('summaryTitle').textContent=m.title;
+  switchTab('flashcards');
+  await buildSummaryContent(m);
+}
+
+async function buildSummaryContent(m){
+  const key=m.id;
+  if(S.summaryGenerated[key]) return;
+  if(!getApiKey()){
+    delete S.summaryGenerated[key];
+    document.getElementById('mindmapContainer').innerHTML='<p style="color:var(--muted);padding:20px;text-align:center">⚠ Please set your API key — click 🔑 in the top right.</p>';
+    document.getElementById('textSummaryContent').innerHTML='';
+    showToast('⚠ Set your API key first — click 🔑');
+    return;
+  }
+  S.summaryGenerated[key]=true;
+
+  function makeLoader(label){
+    return `<div class="summary-loading">
+      <div class="gen-progress">
+        <div class="gen-pct" id="genPct_${label}">0%</div>
+        <div class="gen-bar-wrap"><div class="gen-bar" id="genBar_${label}"></div></div>
+        <div class="gen-label">Generating ${label}…</div>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('fcFront').textContent='Generating…';
+  document.getElementById('fcBack').textContent='';
+  document.getElementById('mindmapContainer').innerHTML=makeLoader('mind map');
+  document.getElementById('textSummaryContent').innerHTML=makeLoader('summary');
+
+  const timers=[];
+  function animatePct(id, barId){
+    let v=0;
+    const el=document.getElementById(id), bar=document.getElementById(barId);
+    const t=setInterval(()=>{
+      if(!el) return;
+      const step=v<60?3:v<80?1.5:v<90?0.4:0.1;
+      v=Math.min(v+step,94);
+      el.textContent=Math.round(v)+'%';
+      if(bar) bar.style.width=v+'%';
+    },80);
+    timers.push(t);
+  }
+  animatePct('genPct_mind map','genBar_mind map');
+  animatePct('genPct_summary','genBar_summary');
+
+  // Strip code blocks to keep JSON clean + within token limit
+  const cleanContent=m.content
+    .replace(/```[\s\S]*?```/g,'[code block omitted]')
+    .replace(/`[^`]+`/g,'[code]')
+    .slice(0,4000);
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true','x-api-key':getApiKey(),'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:2000,
+        messages:[{role:'user',content:`Analyze this educational text and create study materials. Return ONLY valid JSON, no markdown fences, no explanation.
+
+{"flashcards":[{"concept":"concept name","explanation":"plain English explanation, no code"}],"mindmap":{"center":"${m.title.slice(0,25)}","branches":[{"label":"main topic","children":["key point 1","key point 2"]}]},"summary":[{"heading":"section name","points":["key fact 1","key fact 2"]}]}
+
+Requirements:
+- flashcards: 6-8 cards. Each is a key CONCEPT from the text. Never copy code. If text has code examples, explain what concept they demonstrate.
+- mindmap: 4-5 branches covering main topics. Children = specific facts/points. No code.
+- summary: 4-5 sections. Each point = one clear fact from the text. No code.
+
+TEXT:
+${cleanContent}`}]
+      })
+    });
+
+    const data=await res.json();
+    timers.forEach(t=>clearInterval(t));
+
+    if(data.error){
+      showToast('AI Error: '+data.error.message.slice(0,50));
+      throw new Error(data.error.message);
+    }
+
+    const raw=data.content.map(c=>c.text||'').join('').trim()
+      .replace(/^```(?:json)?\s*/,'').replace(/\s*```$/,'').trim();
+
+    let parsed;
+    try{ parsed=JSON.parse(raw); }
+    catch(jsonErr){
+      // Try to extract JSON from within the response
+      const match=raw.match(/\{[\s\S]+\}/);
+      if(match) parsed=JSON.parse(match[0]);
+      else throw jsonErr;
+    }
+
+    buildFlashcards(parsed.flashcards||[]);
+    buildMindmap(parsed.mindmap||{});
+    buildTextSummary(parsed.summary||[]);
+
+  }catch(e){
+    timers.forEach(t=>clearInterval(t));
+    console.error('Summary failed:',e.message);
+    showToast('Summary generation failed — retry');
+    // Reset cache so user can retry
+    delete S.summaryGenerated[key];
+    document.getElementById('mindmapContainer').innerHTML=`<p style="color:var(--muted);padding:20px;text-align:center">Generation failed. <button onclick="showSummary()" style="color:var(--accent);background:none;border:none;cursor:pointer;font-size:.9rem">Retry →</button></p>`;
+    document.getElementById('textSummaryContent').innerHTML='';
+    document.getElementById('fcFront').textContent='Click retry to generate';
+  }
+}
+
+function buildFlashcards(cards){
+  S.flashcards=cards; S.fcIdx=0; S.fcFlipped=false;
+  renderFC();
+}
+function renderFC(){
+  if(!S.flashcards.length) return;
+  const fc=S.flashcards[S.fcIdx];
+  document.getElementById('fcFront').textContent=fc.concept;
+  document.getElementById('fcBack').textContent=fc.explanation;
+  document.getElementById('fcCard').classList.remove('flipped');
+  S.fcFlipped=false;
+  document.getElementById('fcCounter').textContent=`${S.fcIdx+1} / ${S.flashcards.length}`;
+  document.getElementById('fcPrev').disabled=S.fcIdx===0;
+  document.getElementById('fcNext').disabled=S.fcIdx===S.flashcards.length-1;
+}
+function flipCard(){ S.fcFlipped=!S.fcFlipped; document.getElementById('fcCard').classList.toggle('flipped',S.fcFlipped); }
+function fcNav(d){ S.fcIdx+=d; renderFC(); }
+
+function buildMindmap(data){
+  const container=document.getElementById('mindmapContainer');
+  if(!data.center||!(data.branches||[]).length){
+    container.innerHTML='<p style="color:var(--muted);padding:20px;text-align:center">No mind map data.</p>';
+    return;
+  }
+
+  // Use exactly 8 positions (same as reference), pad or trim branches
+  const branches=(data.branches||[]).slice(0,8);
+  const positions=['n-top-left','n-top','n-top-right','n-left','n-right','n-bottom-left','n-bottom','n-bottom-right'];
+
+  // Build description for each branch from its children
+  const getDesc=(br)=>{
+    const kids=(br.children||[]).filter(c=>typeof c==='string'&&c.trim());
+    if(!kids.length) return '';
+    // join children into a flowing description
+    return kids.slice(0,3).join('. ')+(kids.length>3?'…':'')+(kids.length>0&&!kids[kids.length-1].endsWith('.')?'.':'');
+  };
+
+  // Split center title into max 2 lines for big display
+  const cWords=data.center.split(' ');
+  const mid=Math.ceil(cWords.length/2);
+  const cLine1=cWords.slice(0,mid).join(' ');
+  const cLine2=cWords.length>1?cWords.slice(mid).join(' '):'';
+
+  // Arrow endpoints (same as reference — hardcoded per position, relative to 1000×600 container)
+  const arrows=[
+    {x1:420,y1:260,x2:350,y2:200}, // TL
+    {x1:500,y1:240,x2:500,y2:180}, // TC
+    {x1:580,y1:260,x2:650,y2:200}, // TR
+    {x1:380,y1:300,x2:320,y2:300}, // L
+    {x1:620,y1:300,x2:680,y2:300}, // R
+    {x1:420,y1:340,x2:350,y2:400}, // BL
+    {x1:500,y1:370,x2:500,y2:430}, // BC
+    {x1:580,y1:340,x2:650,y2:400}, // BR
+  ];
+
+  const arrowHeads=[
+    'M355,210 L350,200 L360,200',
+    'M495,190 L500,180 L505,190',
+    'M640,200 L650,200 L645,210',
+    'M330,305 L320,300 L330,295',
+    'M670,295 L680,300 L670,305',
+    'M360,400 L350,400 L355,390',
+    'M495,420 L500,430 L505,420',
+    'M645,390 L650,400 L640,400',
+  ];
+
+  let nodesHTML='';
+  branches.forEach((br,i)=>{
+    const cls=positions[i]||'n-top';
+    const desc=getDesc(br);
+    const label=(br.label||'').toUpperCase();
+    nodesHTML+=`
+      <div class="mm-node ${cls}">
+        <h3>${label}</h3>
+        <p>${desc}</p>
+      </div>`;
+  });
+
+  let arrowsHTML=`<svg class="mm-arrows" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet">`;
+  branches.forEach((_,i)=>{
+    if(!arrows[i]) return;
+    const a=arrows[i], ah=arrowHeads[i];
+    arrowsHTML+=`<line x1="${a.x1}" y1="${a.y1}" x2="${a.x2}" y2="${a.y2}"/>`;
+    arrowsHTML+=`<polyline points="${ah.replace('M','').replace(/L/g,' ')}"/>`;
+  });
+  arrowsHTML+=`</svg>`;
+
+  container.innerHTML=`
+    <div class="mm-wrap">
+      ${arrowsHTML}
+      <div class="mm-center">${cLine1}${cLine2?'<br>'+cLine2:''}</div>
+      ${nodesHTML}
+    </div>`;
+}
+
+function buildTextSummary(sections){
+  const el=document.getElementById('textSummaryContent');
+  if(!sections.length){ el.innerHTML='<p style="color:var(--muted)">No summary available.</p>'; return; }
+  el.innerHTML=sections.map(s=>`<h3>${s.heading}</h3><ul>${(s.points||[]).map(p=>`<li>${p}</li>`).join('')}</ul>`).join('');
+}
+
+function switchTab(name){
+  document.querySelectorAll('.s-tab').forEach((t,i)=>{
+    const names=['flashcards','mindmap','text'];
+    t.classList.toggle('active',names[i]===name);
+  });
+  document.querySelectorAll('.s-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+}
+
+// ════ NOTES ════
+function saveToNotes(){
+  if(!S.gaps.length){showToast('No gaps — you aced it!');return;}
+  const m=S.modules[S.activeIdx];
+  S.gaps.forEach(g=>S.notes.push({module:m.title,topic:g.topic,text:g.explanation}));
+  renderNotes(); saveToStorage(); showToast('✓ Saved to Notes');
+}
+function renderNotes(){
+  const list=document.getElementById('notesList'),badge=document.getElementById('notesBadge');
+  if(!S.notes.length){list.innerHTML='<div class="empty-notes"><div class="ei">📝</div><p>Knowledge gaps saved after quizzes will appear here.</p></div>';badge.classList.add('hidden');return;}
+  badge.textContent=S.notes.length; badge.classList.remove('hidden');
+  list.innerHTML='';
+  [...S.notes].reverse().forEach(n=>{const el=document.createElement('div');el.className='note-item';el.innerHTML=`<div class="note-mod">${n.module} · ${n.topic}</div><div class="note-txt">${n.text}</div>`;list.appendChild(el);});
+}
+function openNotes(){document.getElementById('notesPanel').classList.add('open');document.getElementById('notesOverlay').classList.add('open');}
+function closeNotes(){document.getElementById('notesPanel').classList.remove('open');document.getElementById('notesOverlay').classList.remove('open');}
+
+// ════ PROGRESS ════
+function toggleProgress(e){
+  e.stopPropagation();
+  const p=document.getElementById('progressPopup');
+  if(p.classList.contains('open')){p.classList.remove('open');return;}
+
+  const l=document.getElementById('popList'); l.innerHTML='';
+  let tot=0;
+  S.modules.forEach(m=>{
+    const pct=typeof m.score==='number'?m.score:0;
+    const label=typeof m.score==='number'?pct+'%':(m.done?'✓':'—');
+    tot+=pct;
+    const r=document.createElement('div'); r.className='pop-row';
+    const shortTitle=m.title.length>20?m.title.slice(0,19)+'…':m.title;
+    r.innerHTML=`
+      <span class="pop-name" title="${m.title}">${shortTitle}</span>
+      <div class="pop-bar"><div class="pop-bar-fill" style="width:0%;transition:width .8s ease" data-pct="${pct}"></div></div>
+      <span class="pop-pct">${label}</span>`;
+    l.appendChild(r);
+  });
+  const overall=S.modules.length?Math.round(tot/S.modules.length):0;
+  document.getElementById('popOverall').textContent=overall+'%';
+  p.classList.add('open');
+
+  // Animate bars after popup is visible
+  setTimeout(()=>{
+    p.querySelectorAll('.pop-bar-fill').forEach(bar=>{
+      bar.style.width=bar.dataset.pct+'%';
+    });
+  }, 50);
+
+  setTimeout(()=>document.addEventListener('click',function h(){p.classList.remove('open');document.removeEventListener('click',h);}),10);
+}
+
+// ════ EDITOR HELPERS ════
+function edInsert(prefix, suffix='', placeholder=''){
+  const ta=document.getElementById('newContent');
+  const s=ta.selectionStart, e=ta.selectionEnd;
+  const sel=ta.value.slice(s,e)||placeholder;
+  const ins=prefix+sel+suffix;
+  ta.value=ta.value.slice(0,s)+ins+ta.value.slice(e);
+  ta.selectionStart=s+prefix.length;
+  ta.selectionEnd=s+prefix.length+sel.length;
+  ta.focus();
+}
+function edWrap(before, after){
+  const ta=document.getElementById('newContent');
+  const s=ta.selectionStart, e=ta.selectionEnd;
+  const sel=ta.value.slice(s,e)||'text';
+  ta.value=ta.value.slice(0,s)+before+sel+after+ta.value.slice(e);
+  ta.selectionStart=s+before.length;
+  ta.selectionEnd=s+before.length+sel.length;
+  ta.focus();
+}
+function edCodeBlock(){
+  const ta=document.getElementById('newContent');
+  const s=ta.selectionStart, e=ta.selectionEnd;
+  const sel=ta.value.slice(s,e)||'your code here';
+  const ins='\n```python\n'+sel+'\n```\n';
+  ta.value=ta.value.slice(0,s)+ins+ta.value.slice(e);
+  ta.selectionStart=s+10;
+  ta.selectionEnd=s+10+sel.length;
+  ta.focus();
+}
+
+// ════ AUTO FORMAT ════
+async function autoFormatContent(){
+  const ta=document.getElementById('newContent');
+  const raw=ta.value.trim();
+  if(!raw){ showToast('Paste some content first'); return; }
+
+  const btn=document.getElementById('autoFormatBtn');
+  btn.textContent='⏳ Formatting…';
+  btn.disabled=true;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true','x-api-key':getApiKey(),'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:4000,
+        messages:[{role:'user',content:`Convert this raw text into clean, well-structured Markdown. 
+
+Rules:
+- Use ## for main section headings, ### for sub-headings
+- Wrap ALL code blocks with \`\`\`language ... \`\`\` (detect the language automatically)
+- Use **bold** for key terms and important concepts
+- Use > for important callouts or insights
+- Use - for bullet point lists
+- Keep ALL the original content — don't summarize or remove anything
+- Fix any broken formatting, missing backticks around code, etc.
+- Return ONLY the formatted markdown, nothing else
+
+RAW TEXT:
+${raw}`}]
+      })
+    });
+    const data=await res.json();
+    if(data.error) throw new Error(data.error.message);
+    const formatted=data.content.map(c=>c.text||'').join('').trim();
+    ta.value=formatted;
+    btn.textContent='✨ Auto-Format';
+    btn.disabled=false;
+    showToast('✓ Content formatted!');
+  }catch(e){
+    btn.textContent='✨ Auto-Format';
+    btn.disabled=false;
+    showToast('Format failed: '+e.message.slice(0,40));
+  }
+}
+
+// ════ MODAL ════
+function openModal(){document.getElementById('modalOverlay').classList.add('open');}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open');}
+function addModule(){
+  const t=document.getElementById('newTitle').value.trim();
+  const c=document.getElementById('newCat').value.trim()||'General';
+  const txt=document.getElementById('newContent').value.trim();
+  if(!t||!txt){showToast('Please fill title and content');return;}
+  S.modules.push({id:Date.now(),title:t,category:c,content:txt,done:false,score:undefined});
+  closeModal(); ['newTitle','newCat','newContent'].forEach(id=>document.getElementById(id).value='');
+  assignStudyPlan();
+  saveToStorage();
+  S.activeIdx=S.modules.length-1; renderSidebar(); showPreview(); showToast('✓ Module added');
+}
+
+function updateApiKey(){
+  const k=prompt('Enter your Anthropic API key (sk-ant-...):', getApiKey()?'••••••••':'');
+  if(k===null) return;
+  if(k.trim().startsWith('sk-')){
+    setApiKey(k.trim());
+    showToast('✓ API key saved');
+  } else if(k.trim()===''){
+    showToast('API key cleared');
+  } else {
+    showToast('Invalid key — must start with sk-ant-');
+  }
+}
+
+function resetApp(){
+  if(!confirm('Sign out and clear all data?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+}
+
+// ════ SHARING ════
+function getShareId(){
+  // Generate a stable short ID from email — 8 chars, memorable
+  if(!S.user._shareId){
+    const base = S.user.email || S.user.name || 'user';
+    let hash = 0;
+    for(let i=0;i<base.length;i++) hash = ((hash<<5)-hash)+base.charCodeAt(i);
+    const words = ['alpha','beta','gamma','delta','sigma','omega','nova','zeta','echo','flux'];
+    const num = Math.abs(hash) % 9000 + 1000;
+    const word = words[Math.abs(hash) % words.length];
+    S.user._shareId = word + '-' + num;
+  }
+  return S.user._shareId;
+}
+
+function openShareModal(){
+  document.getElementById('shareModalOverlay').classList.add('open');
+  const id = getShareId();
+  document.getElementById('myShareId').textContent = id;
+
+  // Build module checklist
+  const list = document.getElementById('shareModuleList');
+  list.innerHTML = '';
+  S.modules.forEach((m,i)=>{
+    const row = document.createElement('label');
+    row.style.cssText='display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border-radius:10px;cursor:pointer;border:1.5px solid var(--border);transition:border-color .15s';
+    row.innerHTML=`
+      <input type="checkbox" data-idx="${i}" ${m.isPublic?'checked':''} style="width:16px;height:16px;accent-color:var(--accent)">
+      <div>
+        <div style="font-size:.85rem;font-weight:500">${m.title}</div>
+        <div style="font-size:.72rem;color:var(--muted)">${m.category}</div>
+      </div>
+      ${m.isPublic?'<span style="margin-left:auto;font-size:.7rem;background:#EEF2FF;color:var(--accent2);padding:2px 8px;border-radius:4px">Public</span>':''}`;
+    list.appendChild(row);
+  });
+}
+
+function closeShareModal(){
+  document.getElementById('shareModalOverlay').classList.remove('open');
+  document.getElementById('importResult').textContent='';
+  document.getElementById('importIdInput').value='';
+}
+
+function copyShareId(){
+  const id = getShareId();
+  navigator.clipboard.writeText(id).then(()=>showToast('✓ Share ID copied!'));
+}
+
+async function publishModules(){
+  if(!_dbReady){ showToast('⚠ Supabase not configured yet'); return; }
+  const checkboxes = document.querySelectorAll('#shareModuleList input[type=checkbox]');
+  const selected = [];
+  checkboxes.forEach(cb=>{
+    const idx = +cb.dataset.idx;
+    S.modules[idx].isPublic = cb.checked;
+    if(cb.checked) selected.push(S.modules[idx]);
+  });
+
+  if(!selected.length){ showToast('Select at least one module'); return; }
+
+  const shareId = getShareId();
+  const btn=document.querySelector('#shareModalOverlay .confirm');
+  if(btn){ btn.textContent='Publishing…'; btn.disabled=true; }
+
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/readwise_shared`, {
+      method: 'POST',
+      headers: sbHeaders({'Prefer':'resolution=merge-duplicates'}),
+      body: JSON.stringify({
+        share_id: shareId,
+        owner_name: S.user.name,
+        modules: selected.map(m=>({ id:m.id, title:m.title, category:m.category, content:m.content })),
+        updated_at: new Date().toISOString()
+      })
+    });
+
+    if(!res.ok){
+      const errText = await res.text();
+      console.error('Publish error:', res.status, errText);
+      showToast(`⚠ Error ${res.status} — check SQL tables in Supabase`);
+      if(btn){ btn.textContent='📤 Publish Selected'; btn.disabled=false; }
+      return;
+    }
+
+    await saveToStorage();
+    showToast(`✓ Published! Your ID: ${shareId}`);
+    if(btn){ btn.textContent='📤 Publish Selected'; btn.disabled=false; }
+    openShareModal();
+  }catch(e){
+    console.error('publishModules:',e);
+    showToast('⚠ Network error — check console');
+    if(btn){ btn.textContent='📤 Publish Selected'; btn.disabled=false; }
+  }
+}
+
+async function importModules(){
+  const inputId = document.getElementById('importIdInput').value.trim().toLowerCase();
+  const result = document.getElementById('importResult');
+  if(!inputId){ result.textContent='Please enter a Share ID'; return; }
+  if(inputId === getShareId()){ result.textContent="That's your own ID 😄"; return; }
+
+  result.innerHTML='<span style="color:var(--muted)">Looking up…</span>';
+
+  if(!_dbReady){
+    result.textContent='⚠ Supabase not configured — cannot import from others';
+    return;
+  }
+
+  try{
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/readwise_shared?share_id=eq.${encodeURIComponent(inputId)}&select=owner_name,modules`,
+      { headers: sbHeaders() }
+    );
+    const rows = await res.json();
+    if(!rows || !rows[0]){
+      result.innerHTML='<span style="color:#C0392B">No modules found for this ID</span>';
+      return;
+    }
+    const { owner_name, modules } = rows[0];
+    const newMods = (modules||[]).filter(m=>!S.modules.find(existing=>existing.title===m.title));
+
+    if(!newMods.length){
+      result.innerHTML=`<span style="color:var(--muted)">All of ${owner_name}'s modules already in your library</span>`;
+      return;
+    }
+
+    // Add with a flag showing origin
+    newMods.forEach(m=>{
+      S.modules.push({ ...m, id:Date.now()+Math.random(), done:false, score:undefined, importedFrom:owner_name });
+    });
+    assignStudyPlan();
+    renderSidebar();
+    await saveToStorage();
+    closeShareModal();
+    showToast(`✓ Imported ${newMods.length} module${newMods.length>1?'s':''} from ${owner_name}!`);
+  }catch(e){
+    result.innerHTML='<span style="color:#C0392B">Import failed — try again</span>';
+  }
+}
+
+// ════ TUTORIAL ════
+const TUT_KEY='readwise_tut_v3';
+const TUT_STEPS=[
+  {
+    icon:'🎓',
+    title:'Welcome to Readwise!',
+    desc:'Your personal AI-powered study companion. Add any text — articles, notes, papers — and Claude will turn it into an interactive learning experience.',
+    tip:null
+  },
+  {
+    icon:'📚',
+    title:'Your Module Library',
+    desc:'All your reading modules live in the <strong>left sidebar</strong>. Click any module to open it. The coloured dot shows your progress — grey means unread, green means quiz completed.',
+    tip:'💡 You can add as many modules as you want!'
+  },
+  {
+    icon:'✍️',
+    title:'Add Your Own Content',
+    desc:'Click <strong>+ Module</strong> in the top right to paste any text. Lecture notes, research papers, articles — Claude analyses it and generates everything automatically.',
+    tip:'💡 Use the markdown toolbar to format your content with headers, code blocks, and more.'
+  },
+  {
+    icon:'✨',
+    title:'Smart Preview',
+    desc:'Before you read, Claude analyses your module and shows you <strong>what you\'ll learn</strong> and <strong>key concepts</strong>. Click any concept chip to see its definition.',
+    tip:'💡 This helps you read with purpose — you know what to look for!'
+  },
+  {
+    icon:'📖',
+    title:'Reading & Break Timer',
+    desc:'Click <strong>Start Reading</strong> to read the full content with beautiful formatting. When you reach the <strong>halfway point</strong>, your mascot reminds you to take a 10-minute break.',
+    tip:'💡 Research shows spaced breaks improve memory retention by up to 40%!'
+  },
+  {
+    icon:'🎯',
+    title:'AI-Generated Quiz',
+    desc:'After reading, take a <strong>10-question quiz</strong> generated by Claude from your <em>exact</em> content — not generic questions. Wrong answers become knowledge gaps saved to your Notes.',
+    tip:'💡 Your quiz score is saved and tracked in the progress popup!'
+  },
+  {
+    icon:'🧠',
+    title:'Flashcards, Mind Map & Summary',
+    desc:'After the quiz, Claude generates three study tools: <strong>Flashcards</strong> to test your memory, a visual <strong>Mind Map</strong> of the key topics, and a written <strong>Summary</strong>.',
+    tip:'💡 All three are generated specifically from YOUR module content!'
+  },
+  {
+    icon:'📊',
+    title:'Track Your Progress',
+    desc:'Click the <strong>koala mascot</strong> in the top left anytime to see a progress popup with your quiz scores and overall completion across all modules.',
+    tip:'💡 Your progress is saved to the database — pick up from any device!'
+  },
+  {
+    icon:'🔗',
+    title:'Share Your Modules',
+    desc:'Click the <strong>Share button</strong> in the nav to get your unique <strong>Share ID</strong>. Select which modules to make public. Others can import your modules using your ID.',
+    tip:'💡 Perfect for study groups, classes, or teaching!'
+  },
+  {
+    icon:'🚀',
+    title:'You\'re all set!',
+    desc:'Start with the example module or add your own content. Everything you do is <strong>automatically saved</strong> — your modules, scores, notes, and progress.',
+    tip:'💡 Don\'t forget to enter your Anthropic API key using the 🔑 button!'
+  },
+];
+
+
+let _tutStep=0;
+
+function startTutorial(){
+  if(localStorage.getItem(TUT_KEY)) return;
+  _tutStep=0;
+  document.getElementById('tutorialOverlay').style.display='block';
+  renderTutStep();
+}
+
+function renderTutStep(){
+  const step=TUT_STEPS[_tutStep];
+  const total=TUT_STEPS.length;
+  document.getElementById('tutIcon').textContent=step.icon;
+  document.getElementById('tutTitle').textContent=step.title;
+  document.getElementById('tutDesc').innerHTML=step.desc;
+  document.getElementById('tutNextBtn').textContent=_tutStep===total-1?'Start Learning 🚀':'Next →';
+  document.getElementById('tutCounter').textContent=`${_tutStep+1} / ${total}`;
+  document.getElementById('tutDots').innerHTML=TUT_STEPS.map((_,i)=>
+    `<div class="tut-dot${i===_tutStep?' active':''}"></div>`).join('');
+  const tipEl=document.getElementById('tutTip');
+  if(step.tip){ tipEl.textContent=step.tip; tipEl.classList.add('show'); }
+  else { tipEl.textContent=''; tipEl.classList.remove('show'); }
+}
+
+function tutNext(){
+  _tutStep++;
+  if(_tutStep>=TUT_STEPS.length){ endTutorial(); return; }
+  renderTutStep();
+}
+
+function endTutorial(){
+  document.getElementById('tutorialOverlay').style.display='none';
+  localStorage.setItem(TUT_KEY,'1');
+}
+
+// ════ UTILS ════
+function show(id){document.getElementById(id).style.display='block';}
+function hide(id){document.getElementById(id).style.display='none';}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+</script>
+</body>
+</html>
